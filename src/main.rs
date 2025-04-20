@@ -15,7 +15,7 @@ fn main() {
     // Check normal removal
     assert_eq!(list.pop(), Some(3));
 
-    println!("List {:?}", list);
+    println!("List {:?}", list.peek());
 
 }
 
