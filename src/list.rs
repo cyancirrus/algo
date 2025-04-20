@@ -1,6 +1,7 @@
 use std::mem;
 type Link<T> = Option<Box<Node<T>>>;
 
+#[derive(Debug)]
 pub struct List<T> {
     head:Link<T>,
 }
