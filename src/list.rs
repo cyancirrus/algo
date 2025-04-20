@@ -2,10 +2,10 @@ use std::mem;
 type Link<T> = Option<Box<Node<T>>>;
 
 pub struct List<T> {
-    head:Link<T>,
+    head: Link<T>,
 }
 
-struct Node<T>{
+struct Node<T> {
     val: T,
     next: Link<T>,
 }
@@ -15,10 +15,10 @@ pub struct Iter<'a, T> {
 }
 
 pub struct IterMut<'a, T> {
-    next: Option<&'a mut Node<T>>
+    next: Option<&'a mut Node<T>>,
 }
 
-impl <'a, T> Iterator for IterMut<'a, T> {
+impl<'a, T> Iterator for IterMut<'a, T> {
     type Item = &'a mut T;
     fn next(&mut self) -> Option<Self::Item> {
         self.next.take().map(|node| {
@@ -30,14 +30,18 @@ impl <'a, T> Iterator for IterMut<'a, T> {
 
 impl<T> List<T> {
     pub fn iter<'a>(&'a self) -> Iter<'a, T> {
-        Iter { next: self.head.as_deref() }
+        Iter {
+            next: self.head.as_deref(),
+        }
     }
     pub fn iter_mut<'a>(&'a mut self) -> IterMut<'a, T> {
-        IterMut {next: self.head.as_deref_mut() }
+        IterMut {
+            next: self.head.as_deref_mut(),
+        }
     }
 }
 
-impl <'a, T> Iterator for Iter<'a, T> {
+impl<'a, T> Iterator for Iter<'a, T> {
     type Item = &'a T;
 
     fn next(&mut self) -> Option<Self::Item> {
@@ -47,7 +51,6 @@ impl <'a, T> Iterator for Iter<'a, T> {
         })
     }
 }
-
 
 pub struct IntoIter<T>(List<T>);
 
@@ -69,17 +72,17 @@ impl<T> Iterator for IntoIter<T> {
     }
 }
 
-
 #[allow(dead_code)]
-impl <T>List<T> {
+impl<T> List<T> {
     pub fn new() -> Self {
         Self { head: None }
     }
 
-    pub fn push(&mut self, val:T) {
-        let new_node = Box::new( 
-            Node { val: val, next: self.head.take() }
-        );
+    pub fn push(&mut self, val: T) {
+        let new_node = Box::new(Node {
+            val: val,
+            next: self.head.take(),
+        });
         self.head = Some(new_node);
     }
     pub fn pop(&mut self) -> Option<T> {
@@ -92,12 +95,11 @@ impl <T>List<T> {
         self.head.as_ref().map(|node| &node.val)
     }
     pub fn peek_mut(&mut self) -> Option<&mut T> {
-        self.head.as_mut().map(|node| {&mut node.val})
-
+        self.head.as_mut().map(|node| &mut node.val)
     }
 }
 
-impl <T> Drop for List <T> {
+impl<T> Drop for List<T> {
     fn drop(&mut self) {
         let mut cur_link = mem::replace(&mut self.head, None);
         while let Some(mut boxed_node) = cur_link {
@@ -105,4 +107,3 @@ impl <T> Drop for List <T> {
         }
     }
 }
-

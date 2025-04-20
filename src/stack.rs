@@ -5,18 +5,18 @@ type Link<T> = Option<Rc<Node<T>>>;
 
 #[allow(dead_code)]
 struct Node<T> {
-    elem:T,
-    next:Link<T>,
+    elem: T,
+    next: Link<T>,
 }
 
 #[allow(dead_code)]
-pub struct List <T> {
-    head:Link<T>,
+pub struct List<T> {
+    head: Link<T>,
 }
 
-impl <T> List<T> {
+impl<T> List<T> {
     pub fn new() -> Self {
-        List { head: None } 
+        List { head: None }
     }
 
     pub fn head(&self) -> Option<&T> {
@@ -24,18 +24,17 @@ impl <T> List<T> {
     }
 
     pub fn prepend(&self, elem: T) -> Self {
-        List { head: Some(Rc::new(
-                Node { elem: elem, next: self.head.clone() }
-            ))
+        List {
+            head: Some(Rc::new(Node {
+                elem: elem,
+                next: self.head.clone(),
+            })),
         }
     }
 
     pub fn tail(&self) -> Self {
         List {
-            head: self.head.as_ref()
-                .and_then( |node| node.next.clone() )
+            head: self.head.as_ref().and_then(|node| node.next.clone()),
         }
     }
 }
-
-

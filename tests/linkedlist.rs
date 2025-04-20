@@ -1,5 +1,5 @@
-use prepatory::list::List;
 use prepatory::list::Iterator;
+use prepatory::list::List;
 #[test]
 // #[cfg(test)]
 fn basics() {
@@ -33,7 +33,9 @@ fn basics() {
 #[test]
 fn test_iter() {
     let mut list = List::new();
-    list.push(1); list.push(2); list.push(3);
+    list.push(1);
+    list.push(2);
+    list.push(3);
 
     let mut iter = list.into_iter();
     assert_eq!(iter.next(), Some(3));
@@ -42,11 +44,12 @@ fn test_iter() {
     assert_eq!(iter.next(), None);
 }
 
-
 #[test]
 fn iter() {
     let mut list = List::new();
-    list.push(1); list.push(2); list.push(3);
+    list.push(1);
+    list.push(2);
+    list.push(3);
 
     let mut iter = list.iter();
     assert_eq!(iter.next(), Some(&3));
@@ -57,13 +60,17 @@ fn iter() {
 #[test]
 fn iter_mut() {
     let mut list = List::new();
-    list.push(1); list.push(2); list.push(3);
+    list.push(1);
+    list.push(2);
+    list.push(3);
 
     let mut iter = list.iter_mut();
     assert_eq!(iter.next(), Some(&mut 3));
     assert_eq!(iter.next(), Some(&mut 2));
     assert_eq!(iter.next(), Some(&mut 1));
-    list.push(1); list.push(2); list.push(3);
+    list.push(1);
+    list.push(2);
+    list.push(3);
     let mut iter = list.iter_mut();
     if let Some(x) = iter.next() {
         *x = 32; // Actually mutate the list here

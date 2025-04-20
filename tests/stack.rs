@@ -28,5 +28,4 @@ fn basics() {
     // Make sure empty tail works
     let list = list.tail();
     assert_eq!(list.head(), None);
-
 }
