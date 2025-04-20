@@ -4,6 +4,12 @@ type Link<T> = Option<Box<Node<T>>>;
 pub struct List<T> {
     head:Link<T>,
 }
+
+// pub struct Iter<T> {
+//     next: Option<&Node<T>>,
+// }
+
+
 pub struct IntoIter<T>(List<T>);
 
 pub trait Iterator {
