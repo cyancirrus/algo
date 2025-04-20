@@ -5,13 +5,35 @@ pub struct List<T> {
     head:Link<T>,
 }
 
+struct Node<T>{
+    val: T,
+    next: Link<T>,
+}
+
 pub struct Iter<'a, T> {
     next: Option<&'a Node<T>>,
+}
+
+pub struct IterMut<'a, T> {
+    next: Option<&'a mut Node<T>>
+}
+
+impl <'a, T> Iterator for IterMut<'a, T> {
+    type Item = &'a mut T;
+    fn next(&mut self) -> Option<Self::Item> {
+        self.next.take().map(|node| {
+            self.next = node.next.as_deref_mut();
+            &mut node.val
+        })
+    }
 }
 
 impl<T> List<T> {
     pub fn iter<'a>(&'a self) -> Iter<'a, T> {
         Iter { next: self.head.as_deref() }
+    }
+    pub fn iter_mut<'a>(&'a mut self) -> IterMut<'a, T> {
+        IterMut {next: self.head.as_deref_mut() }
     }
 }
 
@@ -47,12 +69,6 @@ impl<T> Iterator for IntoIter<T> {
     }
 }
 
-
-#[allow(dead_code)]
-struct Node<T>{
-    val: T,
-    next: Link<T>,
-}
 
 #[allow(dead_code)]
 impl <T>List<T> {

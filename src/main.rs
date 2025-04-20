@@ -1,4 +1,3 @@
-use std::mem;
 use prepatory::list::List;
 
 fn main() {
@@ -16,7 +15,4 @@ fn main() {
     assert_eq!(list.pop(), Some(3));
 
     println!("List {:?}", list.peek());
-
 }
-
-
