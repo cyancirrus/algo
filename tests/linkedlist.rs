@@ -1,5 +1,5 @@
-use prepatory::list::Iterator;
-use prepatory::list::List;
+use prepatory::memory::Iterator;
+use prepatory::memory::List;
 #[test]
 // #[cfg(test)]
 fn basics() {

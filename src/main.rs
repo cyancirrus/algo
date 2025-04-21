@@ -1,18 +1,13 @@
-use prepatory::list::List;
+use prepatory::memory::List;
+
+fn custom_adder(x:usize) -> impl Fn(usize) -> usize {
+    move |y| x + y
+}
 
 fn main() {
-    let mut list = List::new();
+    let x = 32;
+    let adder = custom_adder(x);
+    println!("hello world");
 
-    // Check empty list behaves right
-    assert_eq!(list.pop(), None);
-
-    // Populate list
-    list.push(1);
-    list.push(2);
-    list.push(3);
-
-    // Check normal removal
-    assert_eq!(list.pop(), Some(3));
-
-    println!("List {:?}", list.peek());
+    println!("Should be 64 {}", adder(32));
 }
