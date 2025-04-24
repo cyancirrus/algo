@@ -1,3 +1,4 @@
+use std::fmt::Debug;
 type Link<T> = Option<Box<Node<T>>>;
 
 struct Node<T> {
@@ -8,6 +9,10 @@ struct Node<T> {
 
 pub struct Tree<T> {
     root: Link<T>,
+}
+
+pub struct Iter<T> {
+    next: Link<T>, 
 }
 
 impl <T:PartialOrd>  Tree<T> {
@@ -86,3 +91,30 @@ impl <T:PartialOrd>  Tree<T> {
         val
     }
 }
+
+impl<T> Tree<T> {
+    pub fn into_iter(self) -> Iter<T> {
+        Iter{ next:self.root }
+    }
+
+}
+impl <T:Debug> Tree<T> {    
+    pub fn display(&self) {
+            self._display(&self.root);
+    }
+    fn _display(&self, curr_node:&Link<T>) {
+        if let Some(node) = curr_node {
+            self._display(&node.left);
+            println!("Node elem {:?}", node.elem);
+            self._display(&node.right);
+        }
+    }
+}
+// impl<T> Iter<T> {
+//     fn next(&mut self) -> Option<&T> {
+//         let val = self.next.map(|node| &node.elem);
+//         self.next =
+
+//         todo!()
+//     }
+// }
