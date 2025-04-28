@@ -1,3 +1,4 @@
+#![allow(warnings)]
 use std::fmt::Debug;
 type Link<T> = Option<Box<Node<T>>>;
 
