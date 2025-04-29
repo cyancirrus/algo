@@ -15,30 +15,20 @@ fn binary_search_pivot(val:i32, nums:Vec<i32>) -> i32 {
     let len = nums.len() - 1;
     let (mut l, mut m, mut u) = (0, len/2, len);
     let mut _break = 0;
-    // while l != u && _break <= 10 {
-    while _break <= 10 {
-        println!("l, m, u: ({}, {}, {})", l, m, u);
+    loop {
         if nums[m] == val {
             return m as i32
         } else if u == l {
             break;
         } else if val > nums[len] {
-            println!("hello");
             if nums[m] > val {
-                println!("a");
-                // println!("l, m, u: ({}, {}, {})", l, m, u);
                 u = m;
             } else if nums[m] < val && nums[m] > nums[0] {
-                println!("b");
                 l = m + 1;
             } else if nums[m] < val && nums[m] < nums[0] {
-                println!("c");
                 u = m;
-            } else {
-                println!("should not be here");
             }
             m = ( l + u )/ 2;
-            println!(">> l, m, u: ({}, {}, {})", l, m, u);
         } else if val < nums[0] {
             if nums[m] < val {
                 l = m + 1;
@@ -47,13 +37,9 @@ fn binary_search_pivot(val:i32, nums:Vec<i32>) -> i32 {
             } else if nums[m] > val && nums[m] < nums[len] {
                 u = m;
             } else {
-                println!("should not be here");
             }
             m = ( l + u )/ 2;
-        } else {
-            break;  
         }
-
     }
     -1
 }
