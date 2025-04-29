@@ -1,46 +1,72 @@
-#![allow(warnings)]
-fn next_permutation(mut perm:Vec<i32>) -> Vec<i32> {
-    let _length = perm.len();
-    for upper in 1..perm.len() {
-        for lower in 0..upper {
-            // Iterate from least significant element first
-            if perm[_length - lower - 1] > perm[_length - upper - 1] {
-                perm.swap(_length - lower - 1, _length - upper - 1);
-                perm[_length - upper  ..].reverse();
-                // println!("Reversing: ( {}: {})", _length - upper + 1, _length);
-                // for straighten in upper..(lower + _length)/2{
-                //     // The array will be completely backwards until that point
-                //     // So we just need to reverse the elements
-                //     // ** DEBUG STATEMENTS
-                //     println!("Length {}, straighten {}, lower {}, upper {}", _length, straighten, lower, upper);
-                //     println!("Reversing: ( {}, {} )", straighten+1, _length + lower - straighten);
-                //     // ** DEBUG STATEMENTS
-                //     perm.swap(straighten, _length + lower - straighten)
-                // }
-                // println!("** Permutation :: {:?}",  perm);
-                return perm
+// 450123
+
+// 4570123
+// * left side *
+// if val > r and m < val and m > l, l-> m
+// if val > r and m < val and m < l, u-> m
+// if val > r and m > val, u-> m 
+
+// * right side *
+// if val < l and m < val, l -> m
+// if val < l and m > val and m > u, l-> m
+// if val < l and m > val and m < u, u -> m
+
+fn binary_search_pivot(val:i32, nums:Vec<i32>) -> i32 {
+    let len = nums.len() - 1;
+    let (mut l, mut m, mut u) = (0, len/2, len);
+    let mut _break = 0;
+    // while l != u && _break <= 10 {
+    while _break <= 10 {
+        println!("l, m, u: ({}, {}, {})", l, m, u);
+        if nums[m] == val {
+            return m as i32
+        } else if u == l {
+            break;
+        } else if val > nums[len] {
+            println!("hello");
+            if nums[m] > val {
+                println!("a");
+                // println!("l, m, u: ({}, {}, {})", l, m, u);
+                u = m;
+            } else if nums[m] < val && nums[m] > nums[0] {
+                println!("b");
+                l = m + 1;
+            } else if nums[m] < val && nums[m] < nums[0] {
+                println!("c");
+                u = m;
+            } else {
+                println!("should not be here");
             }
+            m = ( l + u )/ 2;
+            println!(">> l, m, u: ({}, {}, {})", l, m, u);
+        } else if val < nums[0] {
+            if nums[m] < val {
+                l = m + 1;
+            } else if nums[m] > val && nums[m] > nums[len] {
+                l = m + 1;
+            } else if nums[m] > val && nums[m] < nums[len] {
+                u = m;
+            } else {
+                println!("should not be here");
+            }
+            m = ( l + u )/ 2;
+        } else {
+            break;  
         }
+
     }
-    println!("Reversing to original have reached max perms");
-    perm.into_iter().rev().collect()
+    -1
 }
 
-fn factorial(n:usize) -> usize {
-    (1..=n).product()
-}
-
-
-fn illustrate_solution(mut perm:Vec<i32>) {
-    for i in 0..factorial(perm.len()) + 1 {
-    // for i in 0..6 {
-        println!("Permutation {} :: {:?}", i, perm);
-        perm = next_permutation(perm);
-    }
-}
 
 fn main() {
-    let perm = vec![1,2,3,4];
-    // let perm = vec![1,2,3];
-    illustrate_solution(perm);
+    let nums = vec![4,5,6,7,0,1,2];
+    assert_eq!(0, binary_search_pivot(4, nums.clone()), "search value for 4");
+    assert_eq!(1, binary_search_pivot(5, nums.clone()), "search value for 5");
+    assert_eq!(2, binary_search_pivot(6, nums.clone()), "search value for 6");
+    assert_eq!(3, binary_search_pivot(7, nums.clone()), "search value for 7");
+    assert_eq!(4, binary_search_pivot(0, nums.clone()), "search value for 0");
+    assert_eq!(5, binary_search_pivot(1, nums.clone()), "search value for 1");
+    assert_eq!(6, binary_search_pivot(2, nums.clone()), "search value for 2");
+    assert_eq!(-1, binary_search_pivot(-7, nums.clone()), "should not find value");
 }
