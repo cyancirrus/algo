@@ -40,30 +40,26 @@
 fn largest_subarray(nums:&[i32]) -> &[i32] {
     // current max
     let mut max:i32 = 0;
-    let mut max_l:usize = 0;
-    let mut max_r:usize = 0;
+    let mut max_range = (0, 0);
     // potential sum to track index
     let mut psum:i32 = 0;
-    let mut psum_l:usize = 0;
-    let mut psum_r:usize;
+    let mut psum_start:usize = 0;
 
     for (i, num) in nums.iter().enumerate() {
         if psum < 0 {
             psum = *num;
-            psum_l = i;
-            psum_r = i + 1;
+            psum_start= i;
         } else {
             psum += num;
-            psum_r = i + 1;
         }
         if psum > max {
             max = psum;
-            max_l = psum_l;
-            max_r = psum_r;
+            max_range.0 = psum_start;
+            max_range.1 = i+1;
         }
 
     }
-    &nums[max_l..max_r]
+    &nums[max_range.0..max_range.1]
 }
 
 
