@@ -18,6 +18,47 @@ use std::collections::HashMap;
 //     None
 // }
 
+fn three_sum_space(target:i32, nums:&mut [i32]) -> Option<[i32;3]> {
+    // O(nlogn) << O(n^3)
+    nums.sort();
+    let len = nums.len();
+    for i in 0..len - 2{
+        if nums[i] + nums[i+1] + nums[i+2] > target {
+            return None;
+        }
+        for j in i+1..len -1  {
+            // all considered results would be too large
+            if nums[i] + nums[j] + nums[j+1] > target {
+                break; // nothing ahead will be better
+            }
+            let psum = nums[i] + nums[j];
+            let search = binary_search(target - psum, &nums[j+1..]);
+            if let Some(result) = search {
+                return Some([nums[i], nums[j], result])
+            }
+        }
+    }
+    None
+}
+fn binary_search(target:i32, nums:&[i32]) -> Option<i32> {
+    let len = nums.len();
+    if len == 0 { return None};
+    let (mut l, mut u) = (0, nums.len() - 1);
+    while l <= u {
+        let c = (l + u) / 2;
+        let num = nums[c];
+        if target == num {
+            return Some(target)
+        }
+        if num < target {
+            l= c + 1;
+        } else if num > target {
+            u= c - 1;
+        }
+    }
+    None
+}
+
 fn three_sum(nums:&[i32]) -> Option<[usize;3]> {
     let len = nums.len();
     let mut pairs: HashMap<i32,[usize;2]> = HashMap::with_capacity((len^2 + 1)/2);

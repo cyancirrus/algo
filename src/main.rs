@@ -1,115 +1,82 @@
-// fn three_sum_closest(target:i32, nums:&[i32]) -> Option<i32> {
-//     if nums.len() < 3 { return None };
-//     let mut closest:i32 = i32::MAX;
-//     let mut distance = i32::MAX ;
-//     for i in 0..nums.len() {
-//         for j in 0..i {
-//             for k in 0..j {
-//                 let val = nums[i] + nums[j] + nums[k];
-//                 let dist = (target - val).abs();
-//                 if dist == 0 {
-//                     return Some(target)
-//                 } else if dist < distance {
-//                     closest = val;
-//                     distance = dist;
-//                 }
-//             }
-//         }
-//     }
-//     Some(closest)
-// }
-
-fn three_sum_closest(target:i32, nums:&mut [i32]) -> Option<i32> {
-    if nums.len() < 3 { return None };
-    // O(nlogn) < O(n^3) trivial cost for speedup
+fn three_sum(target:i32, nums:&mut [i32]) -> Option<[i32;3]> {
+    // O(nlogn) << O(n^3)
     nums.sort();
-    let mut closest:i32 = i32::MAX;
-    let mut distance:i32 = i32::MAX;
-    for i in 2..nums.len() {
-        let mut left = 0;
-        let mut right = i - 1;
-        while left < right {
-            let sum = nums[left] + nums[i] + nums[right];
-            let dist = (target - sum).abs();
-            if sum < target {
-                left += 1;
-            } else if sum > target {
-                right -= 1;
-            } else if dist == 0 {
-                return Some(sum)
+    let len = nums.len();
+    for i in 0..len - 2{
+        if nums[i] + nums[i+1] + nums[i+2] > target {
+            return None;
+        }
+        for j in i+1..len -1  {
+            // all considered results would be too large
+            if nums[i] + nums[j] + nums[j+1] > target {
+                break; // nothing ahead will be better
             }
-            // less than or equal to handle nums=&[i32::MIN]
-            if dist <= distance {
-                distance=dist;
-                closest=sum;
+            let psum = nums[i] + nums[j];
+            let search = binary_search(target - psum, &nums[j+1..]);
+            if let Some(result) = search {
+                return Some([nums[i], nums[j], result])
             }
-
         }
     }
-    Some(closest)
+    None
 }
-
+fn binary_search(target:i32, nums:&[i32]) -> Option<i32> {
+    let len = nums.len();
+    if len == 0 { return None};
+    let (mut l, mut u) = (0, nums.len() - 1);
+    while l <= u {
+        let c = (l + u) / 2;
+        let num = nums[c];
+        if target == num {
+            return Some(target)
+        }
+        if num < target {
+            l= c + 1;
+        } else if num > target {
+            u= c - 1;
+        }
+    }
+    None
+}
 
 fn main() {
-    println!("hello world");
+    // Test case 1: A simple test case where a valid triplet exists
     let mut nums = vec![-1, 2, 1, -4];
-    assert_eq!(three_sum_closest(1, &mut nums), Some(2)); // Closest to 1 is 2
+    assert_eq!(three_sum(2, &mut nums), Some([-1, 1, 2]));
+    println!("Test 1 passed!");
+
+    // // Test case 2: A case where the closest sum is less than the target (no exact match)
+    // let mut nums = vec![1, 2, 3, 4, 5];
+    // assert_eq!(three_sum(10, &mut nums), Some([3, 4, 5]));
+    // println!("Test 2 passed!");
+
+    // // Test case 3: Case with negative numbers, should return closest sum
+    // let mut nums = vec![-5, -3, -2, -1, 1, 2, 3, 4];
+    // assert_eq!(three_sum(1, &mut nums), Some([-5, 4, 2]));
+    // println!("Test 3 passed!");
+
+    // // Test case 4: Case where no triplet can sum up to the target (return None)
+    // let mut nums = vec![1, 1, 1, 1];
+    // assert_eq!(three_sum(5, &mut nums), None);
+    // println!("Test 4 passed!");
+
+    // // Test case 5: Case with duplicates, expecting a valid triplet
+    // let mut nums = vec![1, 1, -1, 0];
+    // assert_eq!(three_sum(0, &mut nums), Some([1, -1, 0]));
+    // println!("Test 5 passed!");
+
+    // // Test case 6: Edge case with fewer than 3 numbers
+    // let mut nums = vec![1, 2];
+    // assert_eq!(three_sum(5, &mut nums), None);
+    // println!("Test 6 passed!");
+
+    // // Test case 7: Case where sum of triplet is zero
+    // let mut nums = vec![-1, 0, 1, 2, -1, -4];
+    // assert_eq!(three_sum(0, &mut nums), Some([-1, 0, 1]));
+    // println!("Test 7 passed!");
+
+    // // Test case 8: All numbers are the same, should return a valid triplet
+    // let mut nums = vec![2, 2, 2, 2, 2];
+    // assert_eq!(three_sum(6, &mut nums), Some([2, 2, 2]));
+    // println!("Test 8 passed!");
 }
-
-
-
-
-
-#[cfg(test)]
-mod tests {
-    use super::*;
-
-    #[test]
-    fn test_basic_exact_match() {
-        let mut nums = vec![-1, 2, 1, -4];
-        assert_eq!(three_sum_closest(2, &mut nums), Some(2)); // -1 + 2 + 1 = 2
-    }
-
-    #[test]
-    fn test_basic_closest_no_match() {
-        let mut nums = vec![-1, 2, 1, -4];
-        assert_eq!(three_sum_closest(1, &mut nums), Some(2)); // Closest to 1 is 2
-    }
-
-    #[test]
-    fn test_multiple_possible_closest() {
-        let mut nums = vec![1, 1, 1, 0];
-        assert_eq!(three_sum_closest(-100, &mut nums), Some(2)); // Smallest possible sum is 1+1+0 = 2
-    }
-
-    #[test]
-    fn test_all_positives() {
-        let mut nums = vec![1, 2, 5, 10, 11];
-        assert_eq!(three_sum_closest(12, &mut nums), Some(13)); // 1+2+10
-    }
-
-    #[test]
-    fn test_all_negatives() {
-        let mut nums = vec![-8, -6, -5, -2, -1];
-        assert_eq!(three_sum_closest(-14, &mut nums), Some(-14)); // -6+-5+-3 or similar
-    }
-
-    #[test]
-    fn test_exact_match_multiple_times() {
-        let mut nums = vec![0, 0, 0];
-        assert_eq!(three_sum_closest(1, &mut nums), Some(0)); // Only one possible sum
-    }
-
-    #[test]
-    fn test_insufficient_elements() {
-        let mut nums = vec![1, 2];
-        assert_eq!(three_sum_closest(3, &mut nums), None); // Not enough elements
-    }
-
-    #[test]
-    fn test_empty() {
-        let mut nums = vec![];
-        assert_eq!(three_sum_closest(0, &mut nums), None);
-    }
-}
-
