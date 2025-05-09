@@ -54,7 +54,7 @@ fn minimum_window_substring<'a>(needle:&'a str, haystack:&'a str) -> Option<&'a 
     let mut formed = false;
     let mut position = [0, haystack.len()];
 
-    while l <= r && r < hay.len() {
+    while r < hay.len() {
         if formed {
             let letter = hay[l];
             if let Some(val) = freq.get_mut(&letter) {
