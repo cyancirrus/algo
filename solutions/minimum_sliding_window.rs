@@ -43,6 +43,7 @@ use std::collections::HashMap;
 // }
 
 fn minimum_window_substring<'a>(needle:&'a str, haystack:&'a str) -> Option<&'a str> {
+    if needle.len() { return Some(&""); }
     let mut freq:HashMap<u8, i32> = HashMap::new();
     let hay = haystack.as_bytes();
     for ch in needle.bytes() {
