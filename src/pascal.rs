@@ -1,19 +1,68 @@
+fn pascals_binomial(n:usize) -> Vec<usize> {
+    let mut row = vec![1;n+1];
+    row[0] = 1;
+    row[n] = 1;
+    for i in 1..=n/2 {
+        row[i] = row[i-1] * (n+1-i) / i;
+        row[n-i] = row[i];
+    }
+    row
+}
 
-fn pascals_triangle(n:usize) -> Vec<Vec<usize>> {
-    let mut result:Vec<Vec<usize>> = vec![];
-    if n==0 {return result;}
-    let mut row = vec![0;n];
-    let mut  i = 0;
+// fn pascals_binomial(n:usize) -> Vec<usize> {
+//     let mut fact = vec![1;n];
+//     let mut row = vec![1;n+1];
+//     for i in 1..n {
+//         fact[i] = (i+1) * fact[i-1];
+//     }
+//     for i in 1..=(n+1)/2 {
+//         row[i] = fact[n-1] / (fact[i-1] * fact[n-i-1]);
+//         row[n-i] = row[i];
+//     }
+//     row
+// }
+
+
+// fn pascals_triangle(n:usize) -> Vec<usize> {
+//     let mut row = vec![0;n+1];
+//     let mut  i = 0;
+//     row[0]=1;
+//     while i < n+1 {
+//         for j in (1..=i).rev() {
+//             row[j] += row[j-1];
+//         }
+//         i+=1;
+//     }
+//     row
+// }
+fn pascals_triangle(n:usize) -> Vec<usize> {
+    let mut row = vec![0;n+1];
     row[0]=1;
-    while i < n {
+    for i in 0..=n{
         for j in (1..=i).rev() {
             row[j] += row[j-1];
         }
-        result.push(row[0..=i].to_vec());
-        i+=1;
     }
-    result
+    row
 }
+
+
+
+// fn pascals_triangle(n:usize) -> Vec<Vec<usize>> {
+//     let mut result:Vec<Vec<usize>> = vec![];
+//     if n==0 {return result;}
+//     let mut row = vec![0;n];
+//     let mut  i = 0;
+//     row[0]=1;
+//     while i < n {
+//         for j in (1..=i).rev() {
+//             row[j] += row[j-1];
+//         }
+//         result.push(row[0..=i].to_vec());
+//         i+=1;
+//     }
+//     result
+// }
 // fn pascals_triangle(n:usize) -> Vec<Vec<usize>> {
 //     let mut result:Vec<Vec<usize>> = vec![];
 //     let mut  i = 0;
