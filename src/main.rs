@@ -5,12 +5,12 @@
 //     let result = _coin_change_(amount, &coins, &mut cache);
 //     result
 // }
-
 fn coin_change(amount:usize, coins:&mut [usize]) -> usize {
+    // sloppy loops but works
     coins.sort();
     let mut dp = vec![0;(amount + 1) as usize];
     dp[0] = 0;
-    for &d in coins.iter().rev() {
+    for &d in coins.iter() {
         let mut amt = d;
         loop {
             println!("amt Amount ({}, {})", amt, amount);
@@ -30,6 +30,32 @@ fn coin_change(amount:usize, coins:&mut [usize]) -> usize {
     println!("What does the dp look like {:?}", dp);
     dp[amount]
 }
+
+// fn coin_change(amount:usize, coins:&mut [usize]) -> usize {
+//     // sloppy loops but works
+//     coins.sort();
+//     let mut dp = vec![0;(amount + 1) as usize];
+//     dp[0] = 0;
+//     for &d in coins.iter().rev() {
+//         let mut amt = d;
+//         loop {
+//             println!("amt Amount ({}, {})", amt, amount);
+//             if amt > amount {
+//                 break;
+//             } else if amt <= amount {
+//                 let mut inc = 1;
+//                 if amt > d {
+//                     inc = inc.max(dp[amt-d] );
+//                 }
+//                 dp[amt] += inc;
+//             }
+//             amt += d;
+//         }
+//         println!("What does the dp look like {:?}", dp);
+//     }
+//     println!("What does the dp look like {:?}", dp);
+//     dp[amount]
+// }
 // fn coin_change(amount:usize, coins:&mut [usize]) -> i32 {
 //     coins.sort();
 //     let mut dp = vec![0;(amount + 1) as usize];
