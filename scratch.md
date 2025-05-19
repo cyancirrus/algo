@@ -1,4 +1,72 @@
 ```
+unique paths
+
+- seems similar to the steps in a way
+- lets consider the bottom right
+
+1 x 1 -> 1
+2 x 1 -> 1
+2 x 2 -> 2
+--
+what's different?
+- there's a choice ie both i,j have a way to go
+2 x 3 -> (right -> then solution 2x2, then 2 more)
+so it's like
+2 x 3 -> 2x2 +  1x2
+2 x 4 -> 2x3 + 1x3
+
+1 x n || n x 1 -> 1
+
+# this is going to be a triangle no need for full i x j
+4 x 2 == 2 x 4
+
+f(m, n) {
+    if n || m == 1 {
+        return 1
+    } else {
+        return f(m-1, n) + f(m, n-1)
+    }
+}
+
+-- what does f(2,2) look like
+f(1, 2) + f(2,1) = 2
+
+really we could ignore triangle for a second and have something like
+sum +=
+dp[i][j] and then when you calculate something store it
+-- lets do a recursive and then investigate
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+```
 minimum substring
 samestrings are the same 
 
@@ -15,20 +83,22 @@ f(s1, s2) {
     )
 }
 
+- could i do this as a dp matrix?
+dp ~ #s1 X #s2
 
+s[i][j] == s1[i]=s2[j]
+-- what's the decision point, how to i path through the data?
+if s[i][j] == false -> then take take max of
+s[i+1][j], s[i][j+1]
+-> each thing path will be a diagonal
+so it's something like
+-> is this any different in it's calculation?
+not really
 
+- one pass to calculate the dp matrix
+how can i parse the structure?
 
-
-
-
-
-
-
-
-
-
-
-
+- lets write a recursive function and see what it looks like
 
 
 ```
