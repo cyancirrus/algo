@@ -48,17 +48,17 @@ fn climb_stairs(n:usize) -> usize {
 //     dp[n]
 // }
 
-// fn climbing_stairs(n:i32) -> usize {
-//     let mut memo = HashMap::new();
-//     memo.insert(0, 1);
-//     memo.insert(1, 1);
-//     for i in 2..=n {
-//         let one = memo.get(&(i-1)).unwrap_or(&0);
-//         let two = memo.get(&(i-2)).unwrap_or(&0);
-//         memo.insert(i, one + two);
-//     }
-//     memo[&n]
-// }
+fn climbing_stairs(n:i32) -> usize {
+    let mut memo = HashMap::new();
+    memo.insert(0, 1);
+    memo.insert(1, 1);
+    for i in 2..=n {
+        let one = memo.get(&(i-1)).unwrap_or(&0);
+        let two = memo.get(&(i-2)).unwrap_or(&0);
+        memo.insert(i, one + two);
+    }
+    memo[&n]
+}
 
 
 fn main() {

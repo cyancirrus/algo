@@ -1,4 +1,29 @@
 ```
+robbing
+rob(&[100,2,3,100])
+rob(&[1,2,3,1])
+rob(&[2,7,9,3,1])
+
+-- max ::
+which ones i need to consider
+i + 2, i + 3
+there will be collisions
+almost like starting from the end
+dp[i] = max(dp[i+2], dp[i+3])
+and then recurse backwards
+
+very similar to the idea for coin change
+- mutate the same array
+then take the max of x[0], x[1]
+
+
+
+
+
+
+
+
+```
 coin change
 - in our denomination you can greedy search
 - you might not be able to greedy search given any denominations
