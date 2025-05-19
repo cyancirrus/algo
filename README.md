@@ -12,16 +12,3 @@ A personal collection of algorithm practice problems, data structures, and exper
   - `memory.rs`: initial experiments with manual layout understanding
 
 ## 📁 Structure
-├── solutions/ # LeetCode-style problems (draft + optimized)
-├── src/ # Core data structures & experiments
-├── tests/ # Rust tests for custom structures
-├── simple_last_word.rs # Just messing with standalone ideas
-
-
-## 🚧 Note
-
-This repo reflects an active learning process — most solutions started from scratch, then revisited to improve understanding or performance. Not all are optimal (yet), but all are intentional.
-
----
-
-🦀 Written in Rust. Built for learning.
