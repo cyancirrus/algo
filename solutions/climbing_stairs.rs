@@ -28,17 +28,37 @@ use std::collections::HashMap;
 //     climb(n, &mut HashMap::new())
 // }
 
-fn climbing_stairs(n:i32) -> usize {
-    let mut memo = HashMap::new();
-    memo.insert(0, 1);
-    memo.insert(1, 1);
-    for i in 2..=n {
-        let one = memo.get(&(i-1)).unwrap_or(&0);
-        let two = memo.get(&(i-2)).unwrap_or(&0);
-        memo.insert(i, one + two);
+fn climb_stairs(n:usize) -> usize {
+    let (mut low, mut high) = (0, 1);
+    for _ in 1..=n {
+        let val = low + high;
+        mem::swap(&mut low,&mut high);
+        high = val;
     }
-    memo[&n]
+    high
 }
+
+// fn climb_stairs(n:usize) -> usize {
+//     let mut dp = vec![0;n+1];
+//     dp[0]=1;
+//     dp[1]=1;
+//     for i in 2..=n {
+//         dp[i] = dp[i-1] + dp[i-2]
+//     }
+//     dp[n]
+// }
+
+// fn climbing_stairs(n:i32) -> usize {
+//     let mut memo = HashMap::new();
+//     memo.insert(0, 1);
+//     memo.insert(1, 1);
+//     for i in 2..=n {
+//         let one = memo.get(&(i-1)).unwrap_or(&0);
+//         let two = memo.get(&(i-2)).unwrap_or(&0);
+//         memo.insert(i, one + two);
+//     }
+//     memo[&n]
+// }
 
 
 fn main() {

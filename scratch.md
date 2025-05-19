@@ -56,19 +56,6 @@ Likely need the same style of thing
 - then just return the last value
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
 ```
 unique paths with obstacles
 likely not symetric ie p(i,j) != p(j, i);
