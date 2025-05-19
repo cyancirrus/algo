@@ -1,4 +1,44 @@
 ```
+unique paths with obstacles
+likely not symetric ie p(i,j) != p(j, i);
+- still appears like it might have the same recurrence relation ie
+
+f(m,n) = f(m-1, n) + f(m, n-1)
+... but there's an issue to where if it's included in robots then it's not valid
+just looks like you need an if the obstacle exists ie somethign like
+
+`
+prev = ...
+curr = ...
+
+curr[j] = if grid[i,j] != 1 {
+    prev[j] + curr[j-1]
+} else {
+    0
+};
+
+kk lets try i think this all reasons out 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+```
 unique paths
 
 - seems similar to the steps in a way
@@ -35,34 +75,6 @@ really we could ignore triangle for a second and have something like
 sum +=
 dp[i][j] and then when you calculate something store it
 -- lets do a recursive and then investigate
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 
