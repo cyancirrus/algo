@@ -1,4 +1,75 @@
 ```
+coin change
+- in our denomination you can greedy search
+- you might not be able to greedy search given any denominations
+
+count the number of ways to make change
+hmmm
+while amount > 0
+    hmmm cc(amount - d[i], d[j])
+
+-- want to prevent the number of duplicates
+-- want to calculate all different ways
+
+hmmm lets think of memoization we could build this up
+something like - initialize a hashmap
+while sum < amount
+    sum over all inputs so far for every d[i] and then pull back the entry
+
+- is okay but i don't like the way the data is stored
+can we store this in a better way?
+    - the data is not contigous
+
+
+lets build with a hashmap and then we might see something pop out
+--------------------
+hmmm that's gross lets think of it another way
+
+change(a0) = Sum :: change_(a0 - d[i])
+okay this gives us a good starting place
+
+----
+problem 
+(1 x 5), (5 x 1)
+-> a[5] = 2
+=>
+c(10, [5,1]) = c(5, [5,1]) + c(9, [1])
+- c(5, [5,1]) = 2
+- c(9, [1]) = c(8, [1]) ... = c(5, [1]) = 2
+=> 10
+
+something is going wrong with the recursion it's not so simple
+- maybe building up will be easier?
+c(2) = Sum c(2 - d) 
+-- same thing how do i kick out -- do they all need their own caches?
+can we turn this into a matrix?
+- lets make it so they all have their own cache and see what happens
+
+- okay solution has been that instead of a singular cache and an iterate over all things we do something like
+c(a, d, k) = sum [k..] change(a - d[k], d[k..])
+-- this is recursive how can we build it up?
+
+Likely need the same style of thing
+- build up the first value
+- then build up the second (can use the first values results)
+- ie c(a-d[k]) = dp[k-1] + this thingy
+- then just return the last value
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+```
 unique paths with obstacles
 likely not symetric ie p(i,j) != p(j, i);
 - still appears like it might have the same recurrence relation ie
@@ -18,24 +89,6 @@ curr[j] = if grid[i,j] != 1 {
 };
 
 kk lets try i think this all reasons out 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 ```
