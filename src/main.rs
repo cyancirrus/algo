@@ -26,8 +26,7 @@ fn _powerset_(idx:usize, cset:&mut Vec<usize>, nums:&[usize], sets:&mut Vec<Vec<
     _powerset_(idx + 1, cset, nums, sets);
     cset.push(nums[idx]);
     _powerset_(idx+1, cset, nums, sets);
-    // with.extend(*without);
-    cset.pop();
+    // cset.pop();
 }
 
 
