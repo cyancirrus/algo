@@ -1,3 +1,11 @@
+# For release
+cargo build --release
+// first run on mac is slower has to be validated
+
+# For godbolt
+[check compilation](godbolt.org);
+compile with `-C opt-level=2`
+
 # algo
 
 A personal collection of algorithm practice problems, data structures, and experimental Rust implementations.
