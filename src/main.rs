@@ -2,6 +2,20 @@ use std::mem;
 // use std::time::Instant;
 // use std::hint::black_box;
 
+
+// if l < r 
+// => h = min(l, r) = l
+// if i shift r to r - 1
+// => h = min(l, r-1) = l
+// => shifting the higher of the two will always be less ie
+
+// if l < r 
+// min(l, r) * w < min(l, r-1) * (w-1)
+// by symettry same for r > l 
+// => we find the max by comparing volume at each possible value
+// which is not strictly dominated by this inequality
+
+
 fn container_most_water(nums:&[usize]) -> usize {
     // cleaning up the function 
     let mut l = 0;
