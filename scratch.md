@@ -1,4 +1,25 @@
 ```
+jump game
+- can jump 0..nums[i] at position i
+can i reach the end?
+
+lets look at something like this
+3,4,2,0,4,1,0,0,0
+
+-> taking the largest jump doesn't really work
+=> winning strat here is 1,1,2,4
+
+lets think, for every thing we can get a max amount of steps we could take
+this should be the max of max - 1 and nums [i]
+
+if this hits 0 we can't reach
+- i think this is the key insight
+
+
+
+
+
+```
 
 this seems similar to the problem where i take the area between any two points
 - likely have a max left and a max right and a curr_sum and replace
