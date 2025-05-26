@@ -1,4 +1,44 @@
 ```
+
+this seems similar to the problem where i take the area between any two points
+- likely have a max left and a max right and a curr_sum and replace
+
+lets look at how these values might interact
+lets say n[8] = 6
+n[1] = 5
+n[2] = 7
+n[7] = 10
+
+=> area[1,8] = 7 * 5 = 35
+=> area[1,7] = 6 * min(5, 6) = 30
+=> area[2,7] = 6 * 7 = 42 
+=> area[2, 7] = 7 * 7 = 49
+
+hmmm lets investigate the relation a little more
+lets say n[1] = inf
+
+=> area[1,8] = 7 * 6 = 42
+=> area[1,7] = 6 * 10 = 60
+
+=> area(a, n-1) > area(a, n) <-> the increased gap > the thing
+what's the increased area?
+
+d * delta r-max
+- can i make a decision here? is there any reason i would ever want to go back if i iterate towards min?
+yes, this happens when the lmax < rmax and lmax changes ie
+
+can we just iterate on which side is lower and go in?
+i think this is the correct method but i'm not seeing the proof that it is...
+geometrically it seems correct... lets code it up 
+
+
+
+
+
+
+
+
+```
 robbing
 rob(&[100,2,3,100])
 rob(&[1,2,3,1])
