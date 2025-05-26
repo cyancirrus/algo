@@ -15,8 +15,32 @@ this should be the max of max - 1 and nums [i]
 if this hits 0 we can't reach
 - i think this is the key insight
 
+---
+this works transitioned to tracking a "reachable" now for jumpii
+essentially the same thing but we need to find the number of jumps
 
 
+lets think what pops out first is that if i update the number of reachable
+then i increase the jump counter? is it just that? i think it is?
+it is not consider this counter example
+
+1,2,3,4,5
+this would return 5 - off by one error as well as should be 3
+so we need to inspect the jump increment
+
+1,2,3,4,5,6 should also be 3
+i'm imagining it needs to hit 0 like previous jump range = i
+if previous jump_range = i then jump
+
+but this then becomes a little hard to model
+cur = 1  prev = 0 => jumps += 1
+cur = 3, prev = 1 => jumps += 1
+cur = 5, prev = 3
+cur = 7, prev = 5
+cur = _, prev = 5
+cur = _, prev = 5 => jumps += 1
+
+this feels 
 
 
 ```
