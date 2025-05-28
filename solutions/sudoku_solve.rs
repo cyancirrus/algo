@@ -1,7 +1,7 @@
 struct SudokuState {
-    pub rows:[u16;9],
-    pub cols:[u16;9],
-    pub quad:[u16;9],
+    pub rows:[[u8;9];9],
+    pub cols:[[u8;9];9],
+    pub quad:[[u8;9];9],
 }
 
 fn parse_str_board(board:&[[&str; 9];9]) -> Result<[[u8;9];9], String> {
