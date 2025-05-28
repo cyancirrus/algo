@@ -31,17 +31,17 @@ fn parse_str_board(board:&[[&str; 9];9]) -> Result<[[u8;9];9], String> {
 
 
 fn parse_board(board:&[[u8;9];9]) -> SudokuState {
-    let mut rows = [[0;9];9];
-    let mut cols = [[0;9];9];
-    let mut quad = [[0;9];9];
+    let mut rows = [0;9];
+    let mut cols = [0;9];
+    let mut quad = [0;9];
     for i in 0..9 {
         for j in 0..9 {
-            if board[i][j] != 0 {
-                let idx = board[i][j] as usize - 1;
-                rows[i][idx] = 1; 
-                cols[j][idx] = 1;
-                quad[(i/3)*3 + j/3][idx] = 1;
-            }
+            let val = board[i][j];
+            if val == 0 { continue };
+            let bit = 1<<(val-1);
+            rows[i] |= bit; 
+            cols[j] |= bit;
+            quad[(i/3)*3 + j/3] |= bit;
         }
     }
     SudokuState{rows, cols, quad}
@@ -49,8 +49,7 @@ fn parse_board(board:&[[u8;9];9]) -> SudokuState {
 
 fn solve_sudoku(board:&mut [[u8;9];9]) -> [[u8;9];9] {
     let mut state = parse_board(&board); 
-    let res = _solve_sudoku_(0, &mut state, board);
-    println!("Res {:?}", res);
+    _solve_sudoku_(0, &mut state, board);
     *board
 }
 
@@ -65,13 +64,14 @@ fn _solve_sudoku_(pos:usize, state:&mut SudokuState, board:&mut [[u8;9];9]) -> b
          {
             // ensure number is available
             if {
-                state.rows[i][k] == 0
-                 && state.cols[j][k] == 0
-                 && state.quad[(i/3)*3 + j/3][k] == 0
+                (state.rows[i]>>k)&1 == 0
+                 && (state.cols[j]>>k)&1 == 0
+                 && (state.quad[(i/3)*3 + j/3]>>k)&1 == 0
             }{
-                state.rows[i][k] += 1;
-                state.cols[j][k] += 1;
-                state.quad[(i/3)*3 + j/3][k] += 1;
+                let bit = 1<<k;
+                state.rows[i] |= bit;
+                state.cols[j] |= bit;
+                state.quad[(i/3)*3 + j/3] |= bit;
                 board[i][j] = k as u8 + 1;
                 // try to solve
                 if _solve_sudoku_(pos+1, state, board) {
@@ -79,54 +79,15 @@ fn _solve_sudoku_(pos:usize, state:&mut SudokuState, board:&mut [[u8;9];9]) -> b
                 };
                 board[i][j] = 0;
                 // undo the previous i,j inference and continue through loop
-                state.rows[i][k] = 0;
-                state.cols[j][k] = 0;
-                state.quad[(i/3)*3 + j/3][k] = 0;
+                state.rows[i] &= !bit;
+                state.cols[j] &= !bit;
+                state.quad[(i/3)*3 + j/3] &= !bit;
             }
         }
     }
     false
 }
 
-// // from scratch
-// fn _solve_sudoku_(pos:usize, state:&mut SudokuState, board:&mut [[u8;9];9]) -> bool {
-//     if pos == 81 { return true };
-//     println!("pos {:?}", pos);
-//     let r = pos / 9;
-//     for i in r..9 {
-//         for j in 0..9 {
-//             let val = board[i][j] as usize;
-//             if val == 0 {
-//                 // find a potential value
-//                     for k in 0..9 {
-//                         if {
-//                             state.rows[i][k] == 0
-//                              && state.cols[j][k] == 0
-//                              && state.quad[(i/3)*3 + j/3][k] == 0
-//                         }{
-//                             state.rows[i][k] += 1;
-//                             state.cols[j][k] += 1;
-//                             state.quad[(i/3)*3 + j/3][k] += 1;
-//                             board[i][j] = k as u8 + 1;
-//                             // try to solve
-//                             if _solve_sudoku_(pos+1, state, board) {
-//                                 return true;
-//                             };
-//                             board[i][j] = 0;
-//                             // undo the previous i,j inference and continue through loop
-//                             state.rows[i][k] = 0;
-//                             state.cols[j][k] = 0;
-//                             state.quad[(i/3)*3 + j/3][k] = 0;
-//                         }
-//                         if k==8 {
-//                             return false
-//                         };
-//                     }
-//                 }
-//             }
-//         }
-//    true
-// }
 
 fn main() {
     let input = [
@@ -141,15 +102,32 @@ fn main() {
         [".",".",".",".","8",".",".","7","9"]
     ];
 
-    match parse_str_board(&input) {
-        Ok(mut board) => {
-            println!("hello wolrd!");
-            solve_sudoku(&mut board);
-            println!("{:?}", board);
-        }
-        Err(e) => {
-            println!("Parsing failed: {}", e);
-        }
+    // match parse_str_board(&input) {
+    //     Ok(mut board) => {
+    //         solve_sudoku(&mut board);
+    //         for row in board.iter() {
+    //             println!("{:?}", row);
+    //         }
+    //     }
+    //     Err(e) => {
+    //         println!("Parsing failed: {}", e);
+    //     }
+    // }
+    let mut board: [[u8; 9]; 9] = [
+        [0, 0, 3, 0, 2, 0, 6, 0, 0],
+        [9, 0, 0, 3, 0, 5, 0, 0, 1],
+        [0, 0, 1, 8, 0, 6, 4, 0, 0],
+        [0, 0, 8, 1, 0, 2, 9, 0, 0],
+        [7, 0, 0, 0, 0, 0, 0, 0, 8],
+        [0, 0, 6, 7, 0, 8, 2, 0, 0],
+        [0, 0, 2, 6, 0, 9, 5, 0, 0],
+        [8, 0, 0, 2, 0, 3, 0, 0, 9],
+        [0, 0, 5, 0, 1, 0, 3, 0, 0],
+    ];
+    solve_sudoku(&mut board);
+    for row in board.iter() {
+        println!("{:?}", row);
     }
+
 }
 
