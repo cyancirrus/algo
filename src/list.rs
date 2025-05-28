@@ -80,7 +80,7 @@ impl<T> List<T> {
 
     pub fn push(&mut self, val: T) {
         let new_node = Box::new(Node {
-            val: val,
+            val,
             next: self.head.take(),
         });
         self.head = Some(new_node);
@@ -105,5 +105,17 @@ impl<T> Drop for List<T> {
         while let Some(mut boxed_node) = cur_link {
             cur_link = mem::replace(&mut boxed_node.next, None);
         }
+    }
+}
+
+impl <T> List<T> {
+    pub fn from(vals:&[T]) -> Self 
+    where T: Copy,
+    {
+        let mut l = List::new();
+        for &n in vals {
+            l.push(n);
+        }
+        l
     }
 }
