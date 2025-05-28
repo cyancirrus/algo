@@ -1,5 +1,7 @@
 #![allow(warnings)]
 use std::fmt::Debug;
+use std::mem;
+
 type Link<T> = Option<Box<Node<T>>>;
 
 struct Node<T> {
@@ -45,6 +47,14 @@ impl <T:PartialOrd>  Tree<T> {
             curr_node = &node.right;
         }
         curr_node.as_ref().map(|node| &node.elem)
+    }
+    pub fn swap(&mut self, first:Option<*mut Node<T>>, second:Option<*mut Node<T>>) {
+        // NOTE: Unsure if this works need to test
+        if let (Some(f), Some(s)) = (first, second) {
+            unsafe {
+                mem::swap(&mut (*f).elem, &mut (*s).elem)
+            }
+        }
     }
     pub fn contains(&self, elem:T) -> bool {
         let mut curr_node = &self.root;
