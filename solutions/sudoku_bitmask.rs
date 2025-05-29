@@ -4,31 +4,6 @@ struct SudokuState {
     pub quad:[u16;9],
 }
 
-fn parse_str_board(board:&[[&str; 9];9]) -> Result<[[u8;9];9], String> {
-    let mut parsed = [[0u8; 9];9];
-    
-    for i in 0..9 {
-        for j in 0..9 {
-            match board[i][j] {
-                "." => parsed[i][j] = 0,
-                s => {
-                    if let Ok(n) = s.parse::<u8>() {
-                        if n >= 1 && n <= 9 {
-                            parsed[i][j] = n;
-                        } else {
-                            return Err(format!("Invalid number at ({}, {}): {}", i, j, s));
-                        }
-                    } else {
-                        return Err(format!("Invalid character at ({}, {}): {}", i, j, s));
-                    }
-                }
-            }
-        }
-    }
-
-    Ok(parsed)
-}
-
 
 fn parse_board(board:&[[u8;9];9]) -> SudokuState {
     let mut rows = [0;9];
@@ -87,6 +62,31 @@ fn _solve_sudoku_(pos:usize, state:&mut SudokuState, board:&mut [[u8;9];9]) -> b
     }
     false
 }
+fn parse_str_board(board:&[[&str; 9];9]) -> Result<[[u8;9];9], String> {
+    let mut parsed = [[0u8; 9];9];
+    
+    for i in 0..9 {
+        for j in 0..9 {
+            match board[i][j] {
+                "." => parsed[i][j] = 0,
+                s => {
+                    if let Ok(n) = s.parse::<u8>() {
+                        if n >= 1 && n <= 9 {
+                            parsed[i][j] = n;
+                        } else {
+                            return Err(format!("Invalid number at ({}, {}): {}", i, j, s));
+                        }
+                    } else {
+                        return Err(format!("Invalid character at ({}, {}): {}", i, j, s));
+                    }
+                }
+            }
+        }
+    }
+
+    Ok(parsed)
+}
+
 
 
 fn main() {
