@@ -11,8 +11,8 @@ fn find_order_bit(n:usize, edges:&[(usize,usize)]) -> Vec<usize> {
     let mut in_degree:Vec<u64> = vec![0;n];
     // enables n, others
     let mut out_degree:Vec<u64> = vec![0;n];
-    let mut available: VecDeque<usize> = VecDeque::new();
-    let mut ordering:Vec<usize> = Vec::new();
+    let mut available: VecDeque<usize> = VecDeque::with_capacity(n);
+    let mut ordering:Vec<usize> = Vec::with_capacity(n);
     
     for &(o, e) in edges {
         out_degree[e] |= 1<<o;
