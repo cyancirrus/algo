@@ -52,11 +52,9 @@ fn find_order(adj:&[(usize,usize)]) -> Vec<usize> {
         edges.entry(o).or_default();
     }
     for &n in edges.keys() {
-        if !resolve.contains(&n) {
-            if !collect(n, &edges, &mut ordering, &mut seen, &mut resolve) {
-                ordering.clear();
-                return ordering
-            }
+        if !collect(n, &edges, &mut ordering, &mut seen, &mut resolve) {
+            ordering.clear();
+            return ordering
         }
     }
     ordering
