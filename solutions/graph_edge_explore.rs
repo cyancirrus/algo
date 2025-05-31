@@ -1,6 +1,7 @@
 use std::collections::HashSet;
 use std::collections::HashMap;
 use std::collections::VecDeque;
+use std::hint::black_box;
 use std::time::Instant;
 
 type Adjacency = HashMap<usize, HashSet<usize>>;
@@ -91,6 +92,13 @@ fn main() {
     let start = Instant::now();
     println!("Result {:?}", find_order_bit(4,test));
     println!("Duration {:?}", start.elapsed());
+    let start = Instant::now();
+    for _ in 0..1_000 {
+        black_box(find_order_bit(n, &edges));
+    }
+    let elapsed = start.elapsed();
+    println!("Per run: {:?}", elapsed / 1_000);
+
 
 }
 
