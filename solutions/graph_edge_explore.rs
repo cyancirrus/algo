@@ -45,14 +45,14 @@ fn find_order(adj:&[(usize,usize)]) -> Vec<usize> {
     let mut edges:Adjacency = HashMap::new();
     let mut ordering:Vec<usize> = Vec::new();
     let mut resolve:HashSet<usize> = HashSet::new();
-    let mut seen:HashSet<usize> = HashSet::new();
+    let mut visiting:HashSet<usize> = HashSet::new();
     
     for &(e, o) in adj {
         edges.entry(e).or_default().insert(o);
         edges.entry(o).or_default();
     }
     for &n in edges.keys() {
-        if !collect(n, &edges, &mut ordering, &mut seen, &mut resolve) {
+        if !collect(n, &edges, &mut ordering, &mut visiting, &mut resolve) {
             ordering.clear();
             return ordering
         }
