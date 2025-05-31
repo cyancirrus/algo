@@ -28,7 +28,6 @@ fn find_order_bit(n:usize, edges:&[(usize,usize)]) -> Vec<usize> {
         while bitmask != 0 {
             let lsb = bitmask.trailing_zeros() as usize;
             in_degree[lsb] -= 1;
-            in_degree[lsb] &= !(1<<node);
             if in_degree[lsb] == 0 {
                 available.push_back(lsb);
             }
