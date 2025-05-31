@@ -53,11 +53,11 @@ fn find_order(adj:&[(usize,usize)]) -> Vec<usize> {
     }
     for &n in edges.keys() {
         if !resolve.contains(&n) {
-            collect(n, &edges, &mut ordering, &mut seen, &mut resolve);
+            if !collect(n, &edges, &mut ordering, &mut seen, &mut resolve) {
+                ordering.clear();
+                return ordering
+            }
         }
-    }
-    if ordering.len() != edges.len() {
-        ordering.clear();
     }
     ordering
 }
@@ -66,27 +66,32 @@ fn collect(
     node:usize,
     edges:&Adjacency,
     ordering:&mut Vec<usize>,
-    seen:&mut HashSet<usize>,
+    visiting:&mut HashSet<usize>,
     resolve:&mut HashSet<usize>,
-) {
-    if seen.contains(&node) {
+) -> bool {
+    if resolve.contains(&node) {
+        return true
+    }
+    if visiting.contains(&node) {
         // already processed dependency
-        return
+        return false
     }
-    seen.insert(node);
+    visiting.insert(node);
     for &n in &edges[&node] {
-        collect(n, edges, ordering, seen, resolve);
+        if !collect(n, edges, ordering, visiting, resolve) {
+            return false
+        }
     }
-    if resolve.is_superset(&edges[&node]) {
-        resolve.insert(node);
-        ordering.push(node);
-    }
+    visiting.remove(&node);
+    resolve.insert(node);
+    ordering.push(node);
+    true
 }
 
 
 fn main() {
-    // let test = &[(1,0),(2,0),(3,1),(3,2)];
-    // println!("Result {:?}", find_order(test));
+    let test = &[(1,0),(2,0),(3,1),(3,2)];
+    println!("Result {:?}", find_order(test));
     let test = &[(1,0),(2,0),(3,1),(3,2)];
     let start = Instant::now();
     println!("Result {:?}", find_order_bit(4,test));
