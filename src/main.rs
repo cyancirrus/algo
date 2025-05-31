@@ -92,9 +92,10 @@ fn main() {
     let start = Instant::now();
     println!("Result {:?}", find_order_bit(4,test));
     println!("Duration {:?}", start.elapsed());
+    let test = &[(1,0),(2,0),(3,1),(3,2)];
     let start = Instant::now();
     for _ in 0..1_000 {
-        black_box(find_order_bit(n, &edges));
+        black_box(find_order_bit(4, test));
     }
     let elapsed = start.elapsed();
     println!("Per run: {:?}", elapsed / 1_000);
