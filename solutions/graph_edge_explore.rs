@@ -9,7 +9,7 @@ type Adjacency = HashMap<usize, HashSet<usize>>;
 fn find_order_bit(n:usize, edges:&[(usize,usize)]) -> Vec<usize> {
     assert!(n < 64);
     // dependencies k, # of prereqs
-    let mut in_degree:Vec<u64> = vec![0;n];
+    let mut in_degree:Vec<u8> = vec![0;n];
     // enables n, others
     let mut out_degree:Vec<u64> = vec![0;n];
     let mut available: VecDeque<usize> = VecDeque::with_capacity(n);
