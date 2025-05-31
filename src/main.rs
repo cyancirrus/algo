@@ -32,7 +32,7 @@ fn find_order_bit(n:usize, edges:&[(usize,usize)]) -> Vec<usize> {
             if in_degree[lsb] == 0 {
                 available.push_back(lsb);
             }
-            bitmask &= !(1<<lsb as u64);
+            bitmask &= bitmask-1;
         }
     }
     if ordering.len() != n {
