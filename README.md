@@ -6,8 +6,12 @@ cargo build --release
 [check compilation](godbolt.org);
 compile with `-C opt-level=2`
 
-# algo
+# Closures
+fn add_n(x:u8, y:u8) -> impl Fn(u8){
+    move |y| x + y 
+}
 
+# algo
 A personal collection of algorithm practice problems, data structures, and experimental Rust implementations.
 
 ## ✨ What's in here
