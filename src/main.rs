@@ -17,35 +17,46 @@ use std::collections::HashSet;
 //
 // i should just be able to follow and if i hit the same node i remove the last visisted
 
-fn find_redundant_edge(edges:&[(usize, usize)]) -> (usize, usize) {
-    let mut nodes:HashMap<usize, Vec<usize>> = HashMap::new();
-    let mut visited:HashSet<usize> = HashSet::new();
-    for &(src, tgt) in edges {
-        visited.clear();
-        if dfs(src, tgt, &mut nodes, &mut visited) {
-            return (src, tgt)
-        }
-        nodes.entry(src).or_default().push(tgt);
-        nodes.entry(tgt).or_default().push(src);
-    }
-    (usize::MAX, usize::MAX)
-    
+struct UnionFind {
+    parent: Vec<usize>,
 }
 
-fn dfs(src:usize, target:usize, nodes:&HashMap<usize,Vec<usize>>, visited:&mut HashSet<usize>) -> bool {
-    println!("src target ({}, {})", src,target);
-    if src == target { return true };
-    if !visited.insert(src) { return false };
-    if let Some(neighbors) = nodes.get(&src) {
-        for &n in neighbors {
-            if dfs(n, target, nodes, visited) {
-                return true;
-            }
+impl UnionFind {
+    fn new(n:usize) -> Self {
+        // all nodes are connected to themselves and problem is off by one
+        Self { parent:(0..=n).collect() }
+    }
+    fn find(&mut self, x:usize) -> usize {
+        // recursively looks for the self map which is the root node
+        if self.parent[x] != x {
+            // smart update when searching
+            self.parent[x] = self.find(self.parent[x]);
+        }
+        self.parent[x]
+    }
+
+    fn union(&mut self, x:usize, y:usize) -> bool {
+        let px = self.find(x);
+        let py = self.find(y);
+        if px == py {
+            return false;
+            // cycle detected
+        }
+        self.parent[px] = py;
+        true
+    }
+}
+
+fn find_redundant_edge(edges: &[(usize, usize)]) -> (usize, usize) {
+    let mut uf = UnionFind::new(edges.len());
+    for &(u, v) in edges {
+        if !uf.union(u,v) {
+            return (u, v)
         }
     }
-    visited.remove(&src);
-    false
+    (usize::MAX, usize::MAX)
 }
+
 
 fn main() {
     assert_eq!((2,3), find_redundant_edge(&[(1,2),(1,3),(2,3)]));
@@ -77,3 +88,34 @@ fn main() {
 //     visited.remove(&curr);
 //     None
 // }
+
+// fn find_redundant_edge(edges:&[(usize, usize)]) -> (usize, usize) {
+//     let mut nodes:HashMap<usize, Vec<usize>> = HashMap::new();
+//     let mut visited:HashSet<usize> = HashSet::new();
+//     for &(src, tgt) in edges {
+//         visited.clear();
+//         if dfs(src, tgt, &mut nodes, &mut visited) {
+//             return (src, tgt)
+//         }
+//         nodes.entry(src).or_default().push(tgt);
+//         nodes.entry(tgt).or_default().push(src);
+//     }
+//     (usize::MAX, usize::MAX)
+    
+// }
+
+// fn dfs(src:usize, target:usize, nodes:&HashMap<usize,Vec<usize>>, visited:&mut HashSet<usize>) -> bool {
+//     println!("src target ({}, {})", src,target);
+//     if src == target { return true };
+//     if !visited.insert(src) { return false };
+//     if let Some(neighbors) = nodes.get(&src) {
+//         for &n in neighbors {
+//             if dfs(n, target, nodes, visited) {
+//                 return true;
+//             }
+//         }
+//     }
+//     visited.remove(&src);
+//     false
+// }
+
