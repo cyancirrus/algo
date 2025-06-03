@@ -18,25 +18,20 @@ type UnixTime = usize;
 
 #[derive(Default, Clone)]
 struct Recent {
-    history: VecDeque<(TweetId, UnixTime)>,
-}
-
-struct Tweet {
-    user_id: UserId,
-    tweet_id: TweetId,
+    history: VecDeque<Tweet>,
 }
 
 impl Recent {
     fn new() -> Self {
         Recent { history: VecDeque::with_capacity(N) }
     }
-    fn push(&mut self, tweet_id:TweetId, time:UnixTime) {
+    fn push(&mut self, user_id:UserId, tweet_id:TweetId, time:UnixTime) {
         if self.history.len() >= N {
             self.history.pop_back();
         }
-        self.history.push_front((tweet_id, time));
+        self.history.push_front(Tweet::new(user_id, tweet_id, time));
     }
-    fn pop(&mut self) -> Option<(TweetId, UnixTime)> {
+    fn pop(&mut self) -> Option<Tweet> {
         self.history.pop_front()
     }
 }
@@ -47,27 +42,27 @@ struct Twitter {
     time: UnixTime, 
 }
 
-#[derive(Eq, PartialEq)]
-struct NewsHeapEntry {
+#[derive(Eq, PartialEq, Clone, Debug)]
+struct Tweet {
     user_id:UserId,
     tweet_id:TweetId,
     time:UnixTime,
 }
 
-impl NewsHeapEntry {
+impl Tweet {
     fn new(user_id:UserId, tweet_id:TweetId, time:UnixTime) -> Self {
         Self { user_id, tweet_id, time }
     }
 }
 
-impl Ord for NewsHeapEntry {
+impl Ord for Tweet {
     fn cmp(&self, other:&Self) -> Ordering {
         // default cmp is self > other
         self.time.cmp(&other.time)
     }
 }
 
-impl PartialOrd for NewsHeapEntry {
+impl PartialOrd for Tweet {
     fn partial_cmp(&self, other:&Self) -> Option<Ordering> {
         Some(self.cmp(other))
     }
@@ -86,7 +81,7 @@ impl Twitter {
         Self { follows:HashMap::new(), tweets:HashMap::new(), time:0 }
     }
     fn publish(&mut self, user_id:UserId, tweet_id:TweetId) {
-        self.tweets.entry(user_id).or_default().push(tweet_id, self.time);
+        self.tweets.entry(user_id).or_default().push(user_id, tweet_id, self.time);
         self.time+=1;
 
     }
@@ -96,7 +91,7 @@ impl Twitter {
     fn unfollow(&mut self, follower_id:UserId, followee_id:UserId) {
         self.follows.entry(follower_id).or_default().remove(&followee_id);
     }
-    fn news_feed(&mut self, user_id:UserId) -> Vec<(UserId, TweetId)> {
+    fn news_feed(&mut self, user_id:UserId) -> Vec<Tweet> {
         let mut news: HashMap<UserId, Recent> = HashMap::new();
         if let Some(subscribes) = self.follows.get(&user_id) {
             for ldr in subscribes {
@@ -108,13 +103,13 @@ impl Twitter {
         self._nf_merge_k_(10, &mut news)
     }
 
-    fn _nf_merge_k_(&mut self, k:usize, subscribes:&mut HashMap<UserId, Recent>) -> Vec<(UserId, TweetId)> {
-        let mut sorted:BinaryHeap<NewsHeapEntry>= BinaryHeap::new();
-        let mut recents:Vec<(UserId, TweetId)> = Vec::with_capacity(k);
+    fn _nf_merge_k_(&mut self, k:usize, subscribes:&mut HashMap<UserId, Recent>) -> Vec<Tweet> {
+        let mut sorted:BinaryHeap<Tweet>= BinaryHeap::new();
+        let mut recents:Vec<Tweet> = Vec::with_capacity(k);
 
-        for (user, history) in subscribes.into_iter() {
-            if let Some((tweet_id, time)) = history.pop() {
-                sorted.push(NewsHeapEntry::new(*user, tweet_id, time));
+        for history in subscribes.values_mut() {
+            if let Some(t) = history.pop() {
+                sorted.push(Tweet::new(t.user_id, t.tweet_id, t.time));
             }
         }
         // prototype -- could have number of availables and decrement to break early
@@ -122,10 +117,10 @@ impl Twitter {
             if let Some(tweet) =  sorted.pop() {
                 if let Some(unseen)  = subscribes.get_mut(&tweet.user_id) {
                     if let Some(r) = unseen.pop() {
-                        sorted.push(NewsHeapEntry::new(tweet.user_id, r.0, r.1));
+                        sorted.push(Tweet::new(r.user_id, r.tweet_id, r.time));
                     }
                 }
-                recents.push((tweet.user_id, tweet.tweet_id))
+                recents.push(tweet)
             }
         }
         recents
@@ -145,7 +140,7 @@ fn testing_interface(actions: Vec<TwitApi>, parms: Vec<Vec<usize>>) {
     }
 }
 
-fn testing_action(app: &mut Twitter, action: TwitApi, parms: Vec<usize>) -> Option<Vec<(UserId, TweetId)>> {
+fn testing_action(app: &mut Twitter, action: TwitApi, parms: Vec<usize>) -> Option<Vec<Tweet>> {
     match action {
         TwitApi::Post => {
             app.publish(parms[0], parms[1]);
