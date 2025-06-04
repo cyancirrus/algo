@@ -1,0 +1,126 @@
+#![allow(dead_code)]
+use std::collections::HashSet;
+use std::collections::HashMap;
+use std::mem;
+
+#[derive(Debug)]
+struct RadixNode {
+    label:String,
+    word:Option<String>,
+    children: Vec<RadixNode>,
+}
+
+impl RadixNode {
+    fn new(label:String) -> Self {
+        Self {
+            label,
+            word:None,
+            children: Vec::new(),
+
+        }
+    }
+    fn insert(&mut self, word:&str) {
+        self._insert_internal_(word, word);
+    }
+    fn _insert_internal_(&mut self, sub:&str, word:&str) {
+        for i in 0..self.children.len() {
+            let child = &mut self.children[i];
+            let prefix_len = RadixNode::common_prefix_len(sub, &child.label);
+
+            if prefix_len == 0 {
+                continue;
+            }
+            if prefix_len < child.label.len() {
+                let suffix = child.label[prefix_len..].to_string();
+                let mut new_child = RadixNode::new(suffix);
+                new_child.word = child.word.take();
+                new_child.children.append(&mut child.children);
+
+                child.label = child.label[..prefix_len].to_string();
+                child.children = vec![new_child];
+                child.word = None;
+            }
+
+            if prefix_len < sub.len() {
+                return child._insert_internal_(&sub[prefix_len..], word);
+            } else {
+                child.word = Some(word.to_string());
+                return;
+            }
+        }
+        let mut new_node = RadixNode::new(sub.to_string());
+        new_node.word = Some(word.to_string());
+        self.children.push(new_node);
+    }
+    fn common_prefix_len(a:&str, b:&str) -> usize {
+        a.chars()
+            .zip(b.chars())
+            .take_while(|(a_i, b_i)| a_i == b_i)
+            .count()
+    }
+
+    fn lookup(&self, word:&str) -> Option<&Self> {
+        for child in &self.children {
+            let prefix_len = RadixNode::common_prefix_len(word, &child.label);
+            if prefix_len == 0 {
+                continue;
+            }
+            if prefix_len == word.len() && prefix_len == child.label.len() {
+                return Some(child);
+            }
+            if prefix_len < word.len() && prefix_len == child.label.len() {
+                return child.lookup(&word[prefix_len..]);
+            }
+        }
+        None
+    }
+}
+
+
+
+
+#[derive(Debug)]
+struct TrieNode {
+    children: HashMap<char, TrieNode>,
+    word: Option<String>,
+}
+
+impl TrieNode {
+    fn new() -> Self {
+        Self {
+            children: HashMap::new(),
+            word:None,
+        }
+    }
+    fn insert(&mut self, word:&str) {
+        let mut node = self;
+        for ch in word.chars() {
+            node = node.children.entry(ch)
+                .or_insert_with(|| TrieNode::new());
+        }
+        node.word = Some(word.to_string());
+    }
+    fn build(words:Vec<&str>) ->Self {
+        let mut trie = TrieNode::new();
+        for w in words {
+            trie.insert(w);
+        }
+        trie
+    }
+}
+
+
+
+
+fn main() {
+    let mut root = RadixNode::new("".to_string());
+    root.insert("apple");
+    root.insert("application");
+    root.insert("apt");
+    root.insert("bat");
+    println!("What does this look like {:?}", root);
+
+    if let Some(node) = root.lookup("application") {
+        println!("Found: {:?}", node.word);
+    }
+}
