@@ -1,25 +1,25 @@
 fn one_three_two(nums:&[i32]) -> bool {
-    let mut second = i32::MIN;
+    let mut stack = vec![];
     let mut third = i32::MIN;
 
-    for i in (0..nums.len()).rev() {
-        if nums[i] < third {
+    for &num in nums.iter().rev() {
+        if num < third {
             return true;
         }
-        if nums[i] > second {
-            // best number is always closest to max
-            third = second;
-            second = nums[i];
-        } else if nums[i] > third {
-            // initialize if not initialized
-            third = nums[i];
+        while let Some(&top) = stack.last() {
+            if num > top {
+                third = stack.pop().unwrap();
+            } else {
+                break
+            }
         }
+        stack.push(num);
     }
     false
 }
 
 fn main() {
-    // println!("What i'm confused {:?}", one_three_two(&[1, 4, 0, -1, -2, -3, 2, 1]));
+    println!("What i'm confused {:?}", one_three_two(&[1, 4, 0, -1, -2, -3, 2, 1]));
     // println!("What i'm confused {:?}", one_three_two(&[3, 5, 0, 3, 4]));
     // println!("What i'm confused {:?}", one_three_two(&[1,2,3]));
     // println!("What i'm confused {:?}", one_three_two(&[1,5, 2,3]));
@@ -33,8 +33,8 @@ fn main() {
     // println!("What i'm confused {:?}", one_three_two(&[6, 12, 3, 4, 6, 11, 20]));
     // println!("What i'm confused {:?}", one_three_two(&[1,2,0,1,2,1]));
 
-    println!("What i'm confused {:?}", one_three_two(&[-2,1,2,-2,1,2]));
-    println!("What i'm confused {:?}", one_three_two(&[1,2,3,3,3,4,5,3]));
-
+    // println!("What i'm confused {:?}", one_three_two(&[-2,1,2,-2,1,2]));
+    // println!("What i'm confused {:?}", one_three_two(&[1,2,3,3,3,4,5,3]));
+    // println!("What i'm confused {:?}", one_three_two(&[0,1,3]));
     
 }
