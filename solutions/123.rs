@@ -3,10 +3,12 @@ fn one_three_two(nums:&[i32]) -> bool {
     let mut third = i32::MIN;
 
     for &num in nums.iter().rev() {
+        // third must be initialized
         if num < third {
             return true;
         }
         while let Some(&top) = stack.last() {
+            // infers 1 3 2
             if num > top {
                 third = stack.pop().unwrap();
             } else {
@@ -19,8 +21,8 @@ fn one_three_two(nums:&[i32]) -> bool {
 }
 
 fn main() {
-    println!("What i'm confused {:?}", one_three_two(&[1, 4, 0, -1, -2, -3, 2, 1]));
-    // println!("What i'm confused {:?}", one_three_two(&[3, 5, 0, 3, 4]));
+    // println!("What i'm confused {:?}", one_three_two(&[1, 4, 0, -1, -2, -3, 2, 1]));
+    println!("What i'm confused {:?}", one_three_two(&[3, 5, 0, 3, 4]));
     // println!("What i'm confused {:?}", one_three_two(&[1,2,3]));
     // println!("What i'm confused {:?}", one_three_two(&[1,5, 2,3]));
     // println!("What i'm confused {:?}", one_three_two(&[5,2,3]));
