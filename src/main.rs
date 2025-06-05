@@ -1,115 +1,154 @@
+use std::collections::BTreeSet;
+// [4, 2, 5, 0, 3, 1]
+// check if there is a parter in both options
+//
+// if i swap 4 w (3 V 1)
+// if i swap 2 w (5 V 0)
+//
+// => swap with the partner
+//  else skip 
 
 
-fn find_the_duplicate(nums:&mut [usize]) -> usize {
-    for i in 0..nums.len() {
-        let j = nums[i];
-        if j-1 != i && nums[j-1] == j {
-            return j;
+
+// values [4, 2, 5, 0, 3, 1]
+// idx is now val
+// postion [3, 5, 1, 4, 0, 2]
+//
+// values [0, 3, 1, 2, 5, 4]
+// postion [0, 2, 3, 1, 5, 4]
+// > should swap (3, 2)
+//
+// > p = 0;
+//  v_1 is located at p_2
+// > i could swap 3 with (1 V 2)
+// -> position[idx + 1]
+//
+// there are two decisions 
+// -> exchange p0 with the parter of p1
+// -> exhance p1 with the partner of p0
+//
+// (a, c), (d, f), (b, e)
+//  if i swap a and d
+
+// values [5, 0, 1, 4, 2, 3]
+// postion [1, 2, 4, 5, 3, 0]
+//
+// should swap 0 and 1
+// 0 is in the current thing
+// 1 is located in second
+// ->
+// inspect the second set
+// does
+
+
+
+fn couples_swap(couples:&mut [usize])-> &[usize] {
+    let n =  couples.len();
+    let mut position = vec![0;n];
+    let mut unsolved = BTreeSet::new();
+    // let mut solved = 0;
+
+    for idx in (0..n).step_by(2)  {
+        if couples[idx] != couples[idx + 1] {
+            unsolved.insert(idx);
         }
-        nums.swap(j-1, i);
+        position[couples[idx]] = idx;
+        position[couples[idx + 1]] = idx + 1;
     }
-    0
+    let mut count = unsolved.len();
+    // while count != 0 {
+    //     if let Some(idx) = unsolved.pop_first() {
+    //         println!("idx {}", idx);
+    //         // values
+    //         let v_a = couples[idx]; // 
+    //         let v_b = couples[idx + 1]; 
+    //         // partner position
+    //         let q_a = position[couples[idx] ^ 1];
+    //         let q_b = position[couples[idx+1] ^ 1];
+
+    //         println!("(p_a, p_b), :: (v_a, v_b)");
+    //         println!(" :: ({}, {})",  v_a, v_b);
+    //         println!("(q_a, q_b) :: (c_a, c_b)  ");
+    //         println!("({}, {}) :: ({}, {})", q_a, q_b, couples[idx] ^ 1, couples[idx+1] ^ 1);
+    //         if q_a ==  q_b ^ 1 {
+    //             println!("hello world");
+    //             couples.swap(idx + 1, q_a);
+    //             unsolved.remove(&(q_a % 2));
+    //             count -= 1;
+    //         } else {
+    //             println!("------");
+    //             println!("Unsolved {:?}", unsolved);
+    //             unsolved.insert(idx);
+    //             println!("Unsolved {:?}", unsolved);
+    //             println!("------");
+    //         }
+    //         count -= 1;
+    //     }
+    // }
+    // println!("Unsolved {:?}", unsolved);
+    println!("couples {:?}", couples);
+    println!("Position: {:?}", position);
+    println!("-------------------------------");
+    while let Some(idx) = unsolved.pop_last() {
+    println!("-------------------------------");
+            // values
+            let v_a = couples[idx]; // 
+            let v_b = couples[idx + 1]; 
+            // partner position
+            let q_a = position[couples[idx] ^ 1];
+            let q_b = position[couples[idx+1] ^ 1];
+
+        println!("(p_a, p_b), :: (v_a, v_b)");
+        println!(" :: ({}, {})",  v_a, v_b);
+        println!("(q_a, q_b) :: (c_a, c_b)  ");
+        println!("({}, {}) :: ({}, {})", q_a, q_b, couples[idx] ^ 1, couples[idx+1] ^ 1);
+        println!("idx {}", idx);
+        let q_a = position[couples[idx] ^ 1];
+        let q_b = position[couples[idx+1] ^ 1];
+        println!("Couple ({}, {})", couples[idx], couples[q_a]);
+        // couples.swap(idx + 1, q_a);
+        // solves "a"
+        couples.swap(idx + 1, q_a);
+        // how do we know we've solved well the thing that we've swapped
+        // position.swap(idx + 1, q_a);
+        let p_qa = position[idx + 1];
+        let p_qb = position[couples[idx + 1]];
+        println!("swapping {}", position[idx + 1]);
+        // position.swap(p_qa, p_qb);
+        position.swap(p_qa, p_qb);
+        println!("couples {:?}", couples);
+        println!("Position: {:?}", position);
+        if q_a == q_b ^ 1 {
+            unsolved.remove(&(q_a % 2));
+            println!("hello world");
+        }
+    }
+    couples
 }
 
-// idea can i navigate through the datastructure with indices?
-// there should be one index i haven't seen
-//
-// [1,2,3,4,5] <- visit all indices
-// [5,4,2,1,3] <- visits all indices
-// -> so if we go to like idx % len where do we stop
-//
-// [1,3,4,2,2]
-// 1 ->3 -> 2 -> 3 -> 2 (cycle detected) size 2
-// (we could store the previous things) but how much we need
-// 
-// hmmm this doesn't 
-// [2, 3, 1, 2]
-//
-// [3,1,3,4,2]
-// (3 -> 4 -> 2) -> (3 -> 4 -> 2) 
-// cycle size 3
-//
-// cycles aren't determinitive consider
-// [1, 4, 2, 3] (1,4) is a cycle
-//
-// [5, 1, 2, 3, 4] <- stable 
-// [5, 1, 2, 3, 3] <- contains loop stable 
-// could do like the rabit strategy
-// 0, idx = n-2, n-2 
-// lets say that i could have memory i could store a frequency and just chose 2
-//  i could also do it by for 0..n search for n
-//
-//  what happens if i did a sum n(n+1) / 2 so 4 ~ 10
-//  // notice there's also one missing
-//
-//  [1, 2, 3, 3]  (9)
-//  [2, 2, 1, 4]  (9)
-//  [4, 2, 1, 4]  (11)
-//  [1, 1, 2, 4]  (7) 
-//  [1, 1, 2, 4]  (8) 
-//  [1, 1, 3, 4]  (9) 
-// sums don't work
-// 
-// i could use the rabbit and the hair strategy
+// fn couple_swap(
 
-fn find_duplicate_no_mutate(nums:&[usize]) -> usize {
-    let mut hare = nums[0];
-    let mut tort = nums[0];
 
-    loop {
-        hare = nums[nums[hare]] ;
-        tort = nums[tort] ;
-        if hare == tort {
-            break
-        }
-    }
-    hare = nums[0];
-    loop {
-        if hare == tort {
-            return hare
-        }
-        hare = nums[hare];
-        tort = nums[tort];
-    }
-}
-
-// fn find_the_duplicate_no_mutate(nums:&[usize]) -> usize {
-//     let mut hare = 0;
-//     let mut tort = 1;
-//     let n = nums.len();
-//     let mut i = 0;
-
+// fn couples_swap(couples:&mut [usize])-> &[usize] {
+//     let (mut i, mut j) = (0, 0);
 //     loop {
-//         println!("i {}", i);
-//         if nums[hare] == nums[tort] && hare != tort {
-//             break
-//         }
-//         hare = (hare + 2) % n;
-//         tort = (tort + 1) % n;
+//         if i != couples[i] { break; }
 //         i+=1;
 //     }
-//     hare = 0;
-//     loop {
-//         println!("Hare tort ({}, {})", hare, tort);
-//         hare += 1;
-//         tort += 1;
-//         if hare == tort {
-//             return nums[hare]
-//         }
+//     for i in 0..couples.len() {
+//         // if i == couples[i] { break; }
+//         couples.swap(i, couples[i])
 //     }
+//     couples
 // }
 
-
 fn main() {
-    assert_eq!(2, find_the_duplicate(&mut [1,3,4,2,2]));
-    assert_eq!(4, find_the_duplicate(&mut [1,4,4,3,2]));
-    assert_eq!(3, find_the_duplicate(&mut [3,1,3,4,2]));
-    assert_eq!(2, find_duplicate_no_mutate(&mut [1,3,2,2]));
-    // this returns 5
-    assert_eq!(4, find_duplicate_no_mutate(&mut [1,4,4,3,2,0]));
-    assert_eq!(3, find_duplicate_no_mutate(&mut [3,1,3,4,2,0]));
-    assert_eq!(3, find_duplicate_no_mutate(&mut [3,1,3,4,2,0]));
-    assert_eq!(3, find_duplicate_no_mutate(&mut [3,1,3,4,5,0]));
-    assert_eq!(3, find_duplicate_no_mutate(&mut [3,5,3,4,2,0]));
-
+    // println!("What does this do {:?}", couples_swap(&mut [2,3,0,1]));
+    println!("What does this do {:?}", couples_swap(&mut [4,2,5,0,3,1]));
+    // println!("What does this do {:?}", couples_swap(&mut [0,2,1,3]));
+    // assert_eq!(0, couples_swap(&mut [0,1,2,3]));
+    // assert_eq!(0, couples_swap(&mut [2,3,0,1]));
+    // assert_eq!(0, couples_swap(&mut [2,3,0,1]));
+    // assert_eq!(1, couples_swap(&mut [2,0,3,1]));
+    // assert_eq!(2, couples_swap(&mut [4,2,5,0,3,1]));
 }
