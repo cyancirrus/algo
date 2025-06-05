@@ -1,5 +1,6 @@
-// use std::collections::BTreeSet;
-use indexmap::set::IndexSet;
+use std::collections::BTreeSet;
+// use indexmap::set::IndexSet;
+use std::collections::HashSet;
 // [4, 2, 5, 0, 3, 1]
 // check if there is a parter in both options
 //
@@ -41,58 +42,79 @@ use indexmap::set::IndexSet;
 // inspect the second set
 // does
 
+// fn couples_swap(couples:&mut [usize])-> &[usize] {
+//     // slower but fun to use a btree optimal insert
+//     let n = couples.len();
+//     let mut position = vec![0;n];
+//     let mut unsolved = BTreeSet::new();
 
+//     for idx in (0..n).step_by(2)  {
+//         position[couples[idx]] = idx;
+//         position[couples[idx + 1]] = idx + 1;
+//     }
+//     for idx in (0..n).step_by(2) {
+//         // max collisions is strictly less than n<2 but fun
+//         if position[idx] != position[idx + 1]^1 {
+//             unsolved.insert(idx);
+//         }
+//     }
+//     while let Some(idx) = unsolved.pop_last() {
+//         let q_a = position[couples[idx] ^ 1];
+//         position.swap(couples[idx + 1], couples[q_a]);
+//         couples.swap(idx + 1, q_a);
+//         // working on removal and other logics
+//         if q_a == idx + 1 {
+//             unsolved.remove(&(q_a & !1));
+//         }
+//     }
+//     couples
+// }
 
 fn couples_swap(couples:&mut [usize])-> &[usize] {
-    // Couples Swap Resolver (Deterministic Pointer-Rewiring)
-    //
-    // Given a list of people where each person `x` has a partner `x ^ 1`,
-    // this function reorders the list in-place so that every pair `(i, i+1)`
-    // consists of matched partners, using the **minimum number of swaps**.
-    //
-    // # Key Concepts:
-    // - Each person has exactly one partner (bitwise XOR with 1).
-    // - Only adjacent pairs are allowed (i.e., couples must sit side-by-side).
-    // - Swaps are done deterministically, avoiding unnecessary actions.
-    //
-    // # Invariants:
-    // - `position[x] == i` maps each person to their current position.
-    // - `unsolved` tracks indices of mismatched couples (idx where `couples[idx] != couples[idx+1]`).
-    //
-    // # Why `BTreeSet`:
-    // - Prevents rechecking already-solved pairs.
-    // - Ensures we only act when a mismatch exists.
-    // - Helps avoid redundant swaps and premature moves.
-    //
-    // # Example:
-    // Input:  [0, 2, 1, 3]
-    // Output: [0, 1, 2, 3]  (after swapping index 1 and 2)
-    //
-    // # Complexity:
-    // Time: O(n) for IndexSet and tracking
-    // Space: O(n) for position tracking and unsolved set
+    let n = couples.len();
+    let mut position = vec![0;n];
+    let mut unsolved = Vec::with_capacity(n);
 
-    let mut position = vec![0;couples.len()];
-    let mut unsolved = IndexSet::new();
-
-    for idx in (0..couples.len()).step_by(2)  {
+    for idx in (0..n).step_by(2)  {
         if couples[idx] != couples[idx + 1] {
-            unsolved.insert(idx);
+            unsolved.push(idx);
         }
         position[couples[idx]] = idx;
         position[couples[idx + 1]] = idx + 1;
     }
     while let Some(idx) = unsolved.pop() {
+        if couples[idx] == couples[idx+1] ^ 1 { continue;}
         let q_a = position[couples[idx] ^ 1];
-        let q_b = position[couples[idx+1] ^ 1];
         position.swap(couples[idx + 1], couples[q_a]);
         couples.swap(idx + 1, q_a);
-        if q_a == q_b ^ 1 {
-            unsolved.swap_remove(&(q_a & !1));
-        }
     }
     couples
 }
+
+
+
+// fn couples_swap(couples:&mut [usize])-> &[usize] {
+//     let n = couples.len();
+//     let mut position = vec![0;n];
+//     let mut unsolved = HashSet::new();
+
+//     for idx in (0..n).step_by(2)  {
+//         if couples[idx] != couples[idx + 1] {
+//             unsolved.insert(idx);
+//         }
+//         position[couples[idx]] = idx;
+//         position[couples[idx + 1]] = idx + 1;
+//     }
+//     while let Some(idx) = unsolved.iter().next() {
+//         let q_a = position[couples[*idx] ^ 1];
+//         position.swap(couples[idx + 1], couples[q_a]);
+//         couples.swap(idx + 1, q_a);
+//         if q_a == idx + 1 {
+//             unsolved.remove(&(q_a & !1));
+//         }
+//     }
+//     couples
+// }
 
 // fn couple_swap(
 
