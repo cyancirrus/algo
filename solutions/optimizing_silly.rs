@@ -87,9 +87,10 @@ fn couples_swap(couples:&mut [usize])-> &[usize] {
         let q_a = position[couples[idx] ^ 1];
         let q_b = position[couples[idx+1] ^ 1];
         let p_qa = position[idx + 1];
-        let p_qb = position[couples[q_a]];
+        // let p_qb = position[couples[q_a]];
         couples.swap(idx + 1, q_a);
-        position.swap(p_qa, p_qb);
+        // position.swap(p_qa, p_qb);
+        position.swap(p_qa, q_a);
         if q_a == q_b ^ 1 {
             unsolved.swap_remove(&(q_a & !1));
         }
