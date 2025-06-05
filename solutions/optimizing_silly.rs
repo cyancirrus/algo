@@ -72,11 +72,10 @@ fn couples_swap(couples:&mut [usize])-> &[usize] {
     // Time: O(n) for IndexSet and tracking
     // Space: O(n) for position tracking and unsolved set
 
-    let n =  couples.len();
-    let mut position = vec![0;n];
+    let mut position = vec![0;couples.len()];
     let mut unsolved = IndexSet::new();
 
-    for idx in (0..n).step_by(2)  {
+    for idx in (0..couples.len()).step_by(2)  {
         if couples[idx] != couples[idx + 1] {
             unsolved.insert(idx);
         }
@@ -86,11 +85,8 @@ fn couples_swap(couples:&mut [usize])-> &[usize] {
     while let Some(idx) = unsolved.pop() {
         let q_a = position[couples[idx] ^ 1];
         let q_b = position[couples[idx+1] ^ 1];
-        let p_qa = position[idx + 1];
-        // let p_qb = position[couples[q_a]];
+        position.swap(couples[idx + 1], couples[q_a]);
         couples.swap(idx + 1, q_a);
-        // position.swap(p_qa, p_qb);
-        position.swap(p_qa, q_a);
         if q_a == q_b ^ 1 {
             unsolved.swap_remove(&(q_a & !1));
         }
