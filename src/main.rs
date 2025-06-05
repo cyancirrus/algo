@@ -86,41 +86,15 @@ fn couples_swap(couples:&mut [usize])-> &[usize] {
     //     }
     // }
     // println!("Unsolved {:?}", unsolved);
-    println!("couples {:?}", couples);
-    println!("Position: {:?}", position);
-    println!("-------------------------------");
     while let Some(idx) = unsolved.pop_last() {
-    println!("-------------------------------");
-            // values
-            let v_a = couples[idx]; // 
-            let v_b = couples[idx + 1]; 
-            // partner position
-            let q_a = position[couples[idx] ^ 1];
-            let q_b = position[couples[idx+1] ^ 1];
-
-        println!("(p_a, p_b), :: (v_a, v_b)");
-        println!(" :: ({}, {})",  v_a, v_b);
-        println!("(q_a, q_b) :: (c_a, c_b)  ");
-        println!("({}, {}) :: ({}, {})", q_a, q_b, couples[idx] ^ 1, couples[idx+1] ^ 1);
-        println!("idx {}", idx);
         let q_a = position[couples[idx] ^ 1];
         let q_b = position[couples[idx+1] ^ 1];
-        println!("Couple ({}, {})", couples[idx], couples[q_a]);
-        // couples.swap(idx + 1, q_a);
-        // solves "a"
+        let p_b = position[idx + 1];
+        let p_br = position[couples[idx + 1]];
         couples.swap(idx + 1, q_a);
-        // how do we know we've solved well the thing that we've swapped
-        // position.swap(idx + 1, q_a);
-        let p_qa = position[idx + 1];
-        let p_qb = position[couples[idx + 1]];
-        println!("swapping {}", position[idx + 1]);
-        // position.swap(p_qa, p_qb);
-        position.swap(p_qa, p_qb);
-        println!("couples {:?}", couples);
-        println!("Position: {:?}", position);
+        position.swap(p_b, p_br);
         if q_a == q_b ^ 1 {
             unsolved.remove(&(q_a % 2));
-            println!("hello world");
         }
     }
     couples
