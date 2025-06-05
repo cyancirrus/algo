@@ -92,9 +92,9 @@ fn couples_swap(couples:&mut [usize])-> &[usize] {
     while let Some(idx) = unsolved.pop_last() {
         let q_a = position[couples[idx] ^ 1];
         let q_b = position[couples[idx+1] ^ 1];
-        couples.swap(idx + 1, q_a);
         let p_qa = position[idx + 1];
         let p_qb = position[couples[idx + 1]];
+        couples.swap(idx + 1, q_a);
         position.swap(p_qa, p_qb);
         if q_a == q_b ^ 1 {
             unsolved.remove(&(q_a % 2));
