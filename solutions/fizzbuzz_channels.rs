@@ -4,13 +4,13 @@ use tokio::task;
 use std::sync::Arc;
 use std::sync::atomic::{ Ordering, AtomicUsize };
 
-#[derive(Eq, PartialEq, Debug)]
-enum Task {
-    Fizz(usize),
-    Buzz(usize),
-    FizzBuzz(usize),
-    Number(usize),
-}
+// #[derive(Eq, PartialEq, Debug)]
+// enum Task {
+//     Fizz(usize),
+//     Buzz(usize),
+//     FizzBuzz(usize),
+//     Number(usize),
+// }
 
 async fn fizzbuzz(n:usize) {
     let (fizz_tx, mut fizz_rx) = channel::<usize>(10);
@@ -47,8 +47,6 @@ async fn fizzbuzz(n:usize) {
             (false, false) => num_tx.send(i).await.unwrap(),
         }
     }
-
-
 }
 
 
