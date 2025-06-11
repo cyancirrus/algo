@@ -50,7 +50,7 @@ impl StateTracker {
             if *state == State::Bar {
                 println!("bar");
                 let rem = self.n.fetch_sub(1, Ordering::SeqCst);
-                if rem  == 0 {
+                if rem == 0 {
                     *state = State::Finished;
                 } else {
                     *state = State::Foo;
