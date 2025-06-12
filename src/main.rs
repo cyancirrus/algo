@@ -58,7 +58,7 @@ async fn fizzbuzz(n:usize) {
 
 
 
-#[tokio::main]
+#[tokio::main(flavor = "multi_thread")]
 async fn main() {
     // println!("Result {:?}", fizzbuzz(16).await);
     fizzbuzz(15).await;
