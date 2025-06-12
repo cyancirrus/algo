@@ -68,9 +68,8 @@ async fn fizzbuzz(n: usize) {
 }
 ```
 
-Future Plans
+# Future Plans: Become a better programmer
 
-    Become a better programmer
     Add more problem solutions and comments
     Organize by category/difficulty
     Explore async and parallel algorithms further
