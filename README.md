@@ -16,7 +16,7 @@ A personal collection of Rust solutions to algorithmic problems, designed to bui
 ## Repository Structure
 
 All solutions are in the `solutions/` folder as standalone Rust files:
-
+```
 solutions/
 ├── add_two_numbers.rs
 ├── async_fizzbuzz.rs
@@ -30,7 +30,7 @@ solutions/
 ├── twosum.rs
 ├── unique_paths.rs
 └── ... (many more)
-
+```
 
 ## Example: Async FizzBuzz with Tokio
 
