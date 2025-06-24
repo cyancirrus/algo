@@ -20,7 +20,9 @@ pub struct Iter<T> {
     next: Link<T>, 
 }
 
-impl <T:PartialOrd>  Tree<T> {
+impl <T:PartialOrd>  Tree<T> 
+where T: Copy
+{
     pub fn new() -> Self {
         Self { root: None }
     }
@@ -40,11 +42,31 @@ impl <T:PartialOrd>  Tree<T> {
                     queue.push_back(&mut node_ref.left);
                     queue.push_back(&mut node_ref.right);
                 }
-            } else {
-                break;
             }
         }
         tree
+    }
+    pub fn to_vec(&self) -> Vec<Option<T>> {
+        let mut serial= Vec::new();
+        let mut queue = VecDeque::new();
+        
+        if let Some(root) = &self.root {
+            queue.push_back(Some(root.as_ref()));
+        }
+
+        while let Some(node) = queue.pop_front() {
+            if let Some(n) = node {
+                queue.push_back(n.left.as_deref());
+                queue.push_back(n.right.as_deref());
+                serial.push(Some(n.elem));
+            } else {
+                serial.push(None);
+            }
+        }
+        while serial.last() == Some(&None) {
+            serial.pop();
+        }
+        serial
     }
     pub fn insert(&mut self, elem:T) {
         let mut curr_node = &mut self.root;

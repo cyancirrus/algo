@@ -1,5 +1,6 @@
 mod tree;
 mod tree_solutions;
+use std::collections::VecDeque;
 use tree::{Tree, Node};
 use std::rc::Rc;
 
@@ -18,6 +19,17 @@ fn main() {
     // println!("Is a equal to a {:?}", a == a);
     a.pbreadth();
     a.zigzag();
+    let data = VecDeque::from([
+        Some(0),
+        None,
+        Some(1),
+        None,
+        Some(2),
+        Some(3)
+    ]);
+    let t = Tree::from_vec(data.clone());
+    println!("Tree {t:?}");
+    assert_eq!(data, t.to_vec());
     // a.iter().map(|&elem| elem + 100);
     // println!("Tree appears as {:?}", a);
     // println!("hello world");
