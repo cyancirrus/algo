@@ -2,17 +2,17 @@
 use std::fmt::Debug;
 use std::mem;
 
-type Link<T> = Option<Box<Node<T>>>;
+pub type Link<T> = Option<Box<Node<T>>>;
 
 #[derive(Debug)]
-struct Node<T> {
+pub struct Node<T> {
     pub elem: T,
-    left: Link<T>,
-    right: Link<T>,
+    pub left: Link<T>,
+    pub right: Link<T>,
 }
 #[derive(Debug)]
 pub struct Tree<T> {
-    root: Link<T>,
+    pub root: Link<T>,
 }
 
 pub struct Iter<T> {
