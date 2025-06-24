@@ -6,7 +6,7 @@ type Link<T> = Option<Box<Node<T>>>;
 
 #[derive(Debug)]
 struct Node<T> {
-    elem: T,
+    pub elem: T,
     left: Link<T>,
     right: Link<T>,
 }
@@ -129,6 +129,9 @@ impl<T> Tree<T> {
     pub fn into_iter(self) -> Iter<T> {
         Iter{ next:self.root }
     }
+    pub fn iter(&mut self) -> InOrderIter<'_, T> {
+        InOrderIter::new(self.root.as_deref())
+    }
 
 }
 impl <T:Debug> Tree<T> {    
@@ -143,11 +146,33 @@ impl <T:Debug> Tree<T> {
         }
     }
 }
-// impl<T> Iter<T> {
-//     fn next(&mut self) -> Option<&T> {
-//         let val = self.next.map(|node| &node.elem);
-//         self.next =
 
-//         todo!()
-//     }
-// }
+pub struct InOrderIter<'a, T> {
+    stack: Vec<&'a Node<T>>,
+    current: Option<&'a Node<T>>,
+}
+
+impl <'a, T> InOrderIter<'a,T> 
+{
+    pub fn new(root: Option<&'a Node<T>>) -> Self {
+        InOrderIter {
+            stack: Vec::new(),
+            current: root,
+        }
+    }
+}
+
+impl <'a, T> Iterator for InOrderIter<'a, T> 
+where T:Copy + std::ops::Add,
+{
+    type Item = &'a T;
+    fn next(&mut self) -> Option<Self::Item> {
+        while let Some(node) = self.current {
+            self.stack.push(&node);
+            self.current = node.left.as_deref();
+        }
+        let node = self.stack.pop()?;
+        self.current = node.right.as_deref();
+        Some(&node.elem)
+    }
+}
