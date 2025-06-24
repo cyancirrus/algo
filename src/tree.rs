@@ -1,6 +1,7 @@
 #![allow(warnings)]
 use std::fmt::Debug;
 use std::mem;
+use std::collections::VecDeque;
 
 pub type Link<T> = Option<Box<Node<T>>>;
 
@@ -22,6 +23,28 @@ pub struct Iter<T> {
 impl <T:PartialOrd>  Tree<T> {
     pub fn new() -> Self {
         Self { root: None }
+    }
+    pub fn from_vec(mut data:VecDeque<Option<T>>) -> Self {
+        let mut tree = Tree::new();
+        let mut queue = VecDeque::new();
+        queue.push_back(&mut tree.root);
+        while let Some(slot) = queue.pop_front(){
+            if let Some(datum) = data.pop_front() {
+                if let Some(value) = datum {
+                    *slot = Some(Box::new(Node {
+                        elem:value,
+                        left:None,
+                        right:None
+                    })); 
+                    let node_ref = slot.as_mut().unwrap();
+                    queue.push_back(&mut node_ref.left);
+                    queue.push_back(&mut node_ref.right);
+                }
+            } else {
+                break;
+            }
+        }
+        tree
     }
     pub fn insert(&mut self, elem:T) {
         let mut curr_node = &mut self.root;
