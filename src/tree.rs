@@ -4,12 +4,13 @@ use std::mem;
 
 type Link<T> = Option<Box<Node<T>>>;
 
+#[derive(Debug)]
 struct Node<T> {
     elem: T,
     left: Link<T>,
     right: Link<T>,
 }
-
+#[derive(Debug)]
 pub struct Tree<T> {
     root: Link<T>,
 }
@@ -19,6 +20,9 @@ pub struct Iter<T> {
 }
 
 impl <T:PartialOrd>  Tree<T> {
+    pub fn new() -> Self {
+        Self { root: None }
+    }
     pub fn insert(&mut self, elem:T) {
         let mut curr_node = &mut self.root;
         while let Some(node) = curr_node {
@@ -100,6 +104,24 @@ impl <T:PartialOrd>  Tree<T> {
             }
         }
         val
+    }
+}
+
+impl<T> Tree<T> 
+where T:Copy
+{
+    pub fn in_order(&self) -> Vec<T> {
+        let mut data = vec![];
+        self._in_order_(&self.root, &mut data);
+        data
+    }
+    fn _in_order_(&self, node:&Link<T>, data:&mut Vec<T>) {
+        if let Some(node) = node {
+            self._in_order_(&node.left, data);
+            data.push(node.elem);
+            self._in_order_(&node.right, data);
+        }
+
     }
 }
 
