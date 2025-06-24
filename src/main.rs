@@ -17,6 +17,7 @@ fn main() {
     println!("In order elements appear as {:?}", a.in_order());
     // println!("Is a equal to a {:?}", a == a);
     a.pbreadth();
+    a.zigzag();
     // a.iter().map(|&elem| elem + 100);
     // println!("Tree appears as {:?}", a);
     // println!("hello world");
