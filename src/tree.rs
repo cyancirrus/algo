@@ -50,8 +50,8 @@ where T: Copy
         let mut serial= Vec::new();
         let mut queue = VecDeque::new();
         
-        if let Some(root) = &self.root {
-            queue.push_back(Some(root.as_ref()));
+        if let Some(root) = self.root.as_deref() {
+            queue.push_back(Some(root));
         }
 
         while let Some(node) = queue.pop_front() {
