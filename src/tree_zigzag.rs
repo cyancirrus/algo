@@ -68,6 +68,7 @@ where T:Debug + Display + Copy,
                     next.push_back(right);
                 }
             }
+            // mem::swaps the metadata of the vectors so the 32 bytes for vecdeque
             mem::swap(&mut layer, &mut next);
             odd = !odd;
         }
