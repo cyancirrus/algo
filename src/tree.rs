@@ -221,3 +221,35 @@ where T:Copy + std::ops::Add,
         Some(&node.elem)
     }
 }
+
+pub struct LevelOrderIter <'a, T> {
+    stack: VecDeque<&'a Node<T>>,
+}
+
+impl <'a, T> LevelOrderIter <'a, T> {
+    pub fn new(root:Option<&'a Node<T>>) -> Self {
+        let mut stack = VecDeque::new();
+        if let Some(root) = root {
+            stack.push_back(root);
+        }
+        LevelOrderIter {
+            stack: stack,
+        }
+    }
+}
+impl <'a, T> Iterator for LevelOrderIter <'a, T> {
+    type Item = &'a T;
+    fn next(&mut self) -> Option<Self::Item> {
+        if let Some(node) = self.stack.pop_front() {
+            if let Some(left) = node.left.as_deref() {
+                self.stack.push_back(&left);
+            }
+            if let Some(right) = node.right.as_deref() {
+                self.stack.push_back(&right);
+            }
+            return Some(&node.elem)
+        }
+        None
+    }
+}
+

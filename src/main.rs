@@ -1,12 +1,10 @@
 mod tree;
 mod tree_solutions;
-use tree_solutions::LevelOrderIter;
 use std::collections::VecDeque;
-use tree::{Tree, Node};
+use tree::{Tree, Node, LevelOrderIter};
 use std::rc::Rc;
 
 // learn preorder, inorder, postorder, bfs and implications
-
 
 fn main() {
     let mut a:Tree<usize> = Tree::new();
