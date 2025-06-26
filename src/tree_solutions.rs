@@ -1,4 +1,4 @@
-use crate::tree::{Tree, Link};
+use crate::tree::{Tree, Link, Node};
 use std::fmt::{Display, Debug};
 use std::collections::VecDeque;
 use std::mem;
@@ -28,11 +28,43 @@ where T:Eq + PartialEq
 
 }
 
+pub struct LevelOrderIter <'a, T> {
+    stack: VecDeque<&'a Node<T>>,
+}
+
+impl <'a, T> LevelOrderIter <'a, T> {
+    pub fn new(root:Option<&'a Node<T>>) -> Self {
+        let mut stack = VecDeque::new();
+        if let Some(root) = root {
+            stack.push_back(root);
+        }
+        LevelOrderIter {
+            stack: stack,
+        }
+    }
+}
+impl <'a, T> Iterator for LevelOrderIter <'a, T> {
+    type Item = &'a T;
+    fn next(&mut self) -> Option<Self::Item> {
+        if let Some(node) = self.stack.pop_front() {
+            if let Some(left) = node.left.as_deref() {
+                self.stack.push_back(&left);
+            }
+            if let Some(right) = node.right.as_deref() {
+                self.stack.push_back(&right);
+            }
+            return Some(&node.elem)
+        }
+        None
+    }
+}
+
+
 impl <T> Tree <T>
 where T:Debug + Display + Copy,
 {
 
-    pub fn pbreadth(&self) {
+    pub fn levelorder(&self) {
         let mut queue = VecDeque::new();
         if let Some(root) = &self.root {
             queue.push_back(root);
@@ -48,6 +80,9 @@ where T:Debug + Display + Copy,
             }
         }
     }
+    pub fn preorder(&self) {
+    }
+
     pub fn zigzag(&self) {
         let mut layer = VecDeque::new();
         let mut next = VecDeque::new();
