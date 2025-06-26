@@ -1,7 +1,7 @@
 mod tree;
 mod tree_solutions;
 use std::collections::VecDeque;
-use tree::{Tree, Node, LevelOrderIter};
+use tree::{Tree, Node, LevelOrderIter, PreOrderIter};
 use std::rc::Rc;
 
 // learn preorder, inorder, postorder, bfs and implications
@@ -17,7 +17,6 @@ fn main() {
     a.insert(25);
     println!("In order elements appear as {:?}", a.in_order());
     // println!("Is a equal to a {:?}", a == a);
-    a.levelorder();
     a.zigzag();
     let data = VecDeque::from([
         Some(0),
@@ -31,6 +30,9 @@ fn main() {
     println!("Tree {t:?}");
     assert_eq!(data, t.to_vec());
     for val in LevelOrderIter::new(t.root.as_deref()) {
+        println!("{}", val);
+    }
+    for val in PreOrderIter::new(t.root.as_deref()) {
         println!("{}", val);
     }
     // a.iter().map(|&elem| elem + 100);

@@ -233,7 +233,7 @@ impl <'a, T> LevelOrderIter <'a, T> {
             stack.push_back(root);
         }
         LevelOrderIter {
-            stack: stack,
+            stack,
         }
     }
 }
@@ -253,3 +253,35 @@ impl <'a, T> Iterator for LevelOrderIter <'a, T> {
     }
 }
 
+pub struct PreOrderIter<'a, T> {
+    stack: Vec<&'a Node<T>>,
+    current: Option<&'a Node<T>>,
+}
+
+impl <'a, T> PreOrderIter <'a, T> {
+    pub fn new(root:Option<&'a Node<T>>) -> Self {
+        Self {
+            stack:Vec::new(),
+            current: root,
+        }
+    }
+}
+
+impl <'a, T> Iterator for PreOrderIter<'a,T> {
+    type Item = &'a T;
+    fn next(&mut self) -> Option<Self::Item> {
+        let mut node = self.current;
+        loop {
+            if let Some(existence) = node {
+                self.current = existence.left.as_deref();
+                self.stack.push(existence);
+                return Some(&existence.elem)
+            } 
+            if let Some(existence) = self.stack.pop() {
+                node = existence.right.as_deref();
+            } else {
+                return None
+            }
+        }
+    }
+}

@@ -25,30 +25,11 @@ where T:Eq + PartialEq
     fn eq(&self, other:&Tree<T>) -> bool{
         Self::equal(&self.root, &other.root)
     }
-
 }
-
-
 impl <T> Tree <T>
 where T:Debug + Display + Copy,
 {
 
-    pub fn levelorder(&self) {
-        let mut queue = VecDeque::new();
-        if let Some(root) = &self.root {
-            queue.push_back(root);
-        }
-        while let Some(node) = queue.pop_front() {
-            println!("{}", node.elem);
-
-            if let Some(left) = &node.left {
-                queue.push_back(left);
-            }
-            if let Some(right) = &node.right {
-                queue.push_back(right);
-            }
-        }
-    }
 
     pub fn zigzag(&self) {
         let mut layer = VecDeque::new();
