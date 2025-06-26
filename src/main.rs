@@ -1,7 +1,7 @@
 mod tree;
 mod tree_solutions;
 use std::collections::VecDeque;
-use tree::{Tree, Node, LevelOrderIter, PreOrderIter};
+use tree::{Tree, Node, LevelOrderIter, PreOrderIter, PostOrderIter};
 use std::rc::Rc;
 
 // learn preorder, inorder, postorder, bfs and implications
@@ -33,6 +33,9 @@ fn main() {
         println!("{}", val);
     }
     for val in PreOrderIter::new(t.root.as_deref()) {
+        println!("{}", val);
+    }
+    for val in PostOrderIter::new(t.root.as_deref()) {
         println!("{}", val);
     }
     // a.iter().map(|&elem| elem + 100);

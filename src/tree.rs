@@ -1,11 +1,12 @@
 #![allow(warnings)]
 use std::fmt::Debug;
 use std::mem;
+use std::ptr;
 use std::collections::VecDeque;
 
 pub type Link<T> = Option<Box<Node<T>>>;
 
-#[derive(Debug)]
+#[derive(Debug, Eq, PartialEq)]
 pub struct Node<T> {
     pub elem: T,
     pub left: Link<T>,
@@ -282,6 +283,57 @@ impl <'a, T> Iterator for PreOrderIter<'a,T> {
             } else {
                 return None
             }
+        }
+    }
+}
+
+pub struct PostOrderIter <'a, T> {
+    stack: Vec<&'a Node<T>>,
+    curr: Option<&'a Node<T>>,
+    prev: Option<&'a Node<T>>,
+}
+
+impl <'a,T> PostOrderIter <'a, T> {
+    pub fn new(root:Option<&'a Node<T>>) -> Self {
+        Self {
+            stack:Vec::new(),
+            curr:root,
+            prev:None,
+        }
+    }
+}
+
+impl <'a, T> Iterator for PostOrderIter <'a, T> 
+{
+    type Item = &'a T;
+    fn next(&mut self) -> Option<Self::Item> {
+        loop {
+            if let Some(node) = self.curr {
+                // Process the left branch
+                self.stack.push(&node);
+                self.curr = node.left.as_deref();
+                continue;
+            }
+            if let Some(curr) = self.stack.pop() {
+                if {
+                    // Safety check prior to unwrap
+                    self.prev.is_none() || curr.right.is_none()
+                    || ptr::eq(self.prev.unwrap(), curr.right.as_deref().unwrap()) 
+                }{
+                    // Right branch either does not exist or we have already visited
+                    self.prev = Some(curr);
+                    self.curr = curr.right.as_deref();
+                    return Some(&curr.elem);
+                }
+                if let Some(right) = curr.right.as_deref() {
+                    // Add the right sub-branch to iterator
+                    self.stack.push(&curr);
+                    self.stack.push(&right);
+                    self.curr = Some(&right);
+                    continue;
+                }
+            }
+            return None;
         }
     }
 }

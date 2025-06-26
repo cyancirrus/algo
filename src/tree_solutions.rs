@@ -1,4 +1,4 @@
-use crate::tree::{Tree, Link, Node};
+use crate::tree::{Tree, Link};
 use std::fmt::{Display, Debug};
 use std::collections::VecDeque;
 use std::mem;
