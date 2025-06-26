@@ -8,6 +8,11 @@ use std::rc::Rc;
 // Advanced graph algorithms like shortest paths (Dijkstra, Bellman-Ford), MST (Kruskal, Prim), strongly connected components, topological sort?
 // Dynamic Programming: You have backtracking & some DP, but do you have solid exposure to:
 // DP with bitmasking, tree DP, interval DP, optimization techniques (knapsack variants, DP on graphs)?
+//
+// Segment trees / Fenwick trees
+// Union-find (Disjoint Set Union)
+// Balanced BSTs (AVL, Red-Black trees) or heaps in detail?
+// Tries (you have trie.rs, great!) but also suffix trees/arrays?
 
 fn main() {
     let mut a:Tree<usize> = Tree::new();
