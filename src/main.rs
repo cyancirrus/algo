@@ -4,7 +4,10 @@ use std::collections::VecDeque;
 use tree::{Tree, Node, LevelOrderIter, PreOrderIter, PostOrderIter};
 use std::rc::Rc;
 
-// learn preorder, inorder, postorder, bfs and implications
+// TODO: Gaps for tomorrow
+// Advanced graph algorithms like shortest paths (Dijkstra, Bellman-Ford), MST (Kruskal, Prim), strongly connected components, topological sort?
+// Dynamic Programming: You have backtracking & some DP, but do you have solid exposure to:
+// DP with bitmasking, tree DP, interval DP, optimization techniques (knapsack variants, DP on graphs)?
 
 fn main() {
     let mut a:Tree<usize> = Tree::new();
