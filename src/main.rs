@@ -15,7 +15,7 @@ use std::cmp::Ordering;
 
 #[derive(Eq, PartialEq)]
 struct MinHeapEntry {
-    val:i32,
+    val:usize,
     pos:(usize, usize),
 }
 
@@ -30,13 +30,14 @@ impl PartialOrd for MinHeapEntry {
         Some(self.cmp(other))
     }
 }
-
-fn explore(weights:&[Vec<i32>]) -> i32 {
+fn explore(weights:&[Vec<usize>]) -> usize {
+    // A*
     let m = weights.len();
     let n = weights[0].len();
-    let mut mem = vec![vec![i32::MAX;n];m];
+    let mut mem = vec![vec![usize::MAX;n];m];
     let mut queue = BinaryHeap::new();
-    queue.push(MinHeapEntry{ val:weights[0][0], pos:(0,0) });
+    // over-estimates by 2 but consistent
+    queue.push(MinHeapEntry{ val:weights[0][0] + m + n, pos:(0,0) });
     mem[0][0] = weights[0][0];
     _explore_( m, n, &mut queue, weights, &mut mem);
     mem[m-1][n-1]
@@ -46,8 +47,8 @@ fn explore(weights:&[Vec<i32>]) -> i32 {
 fn _explore_(
     m:usize, n:usize,
     queue:&mut BinaryHeap<MinHeapEntry>,
-    weights:&[Vec<i32>],
-    mem:&mut [Vec<i32>]) {
+    weights:&[Vec<usize>],
+    mem:&mut [Vec<usize>]) {
     let directions = [(1,0),(!0,0),(0,1),(0,!0)];
     while let Some(p) = queue.pop() {
         if p.pos == (m-1, n-1) {
@@ -60,12 +61,49 @@ fn _explore_(
                 let cost = mem[p.pos.0][p.pos.1] + weights[nx][ny];
                 if cost < mem[nx][ny] {
                     mem[nx][ny] = cost;
-                    queue.push(MinHeapEntry { val:cost, pos:(nx, ny) });
+                    queue.push(MinHeapEntry { val:cost + m-nx + n - ny, pos:(nx, ny) });
                 }
             }
         }
     }
 }
+
+//fn explore(weights:&[Vec<i32>]) -> i32 {
+//    //djisktra's
+//    let m = weights.len();
+//    let n = weights[0].len();
+//    let mut mem = vec![vec![i32::MAX;n];m];
+//    let mut queue = BinaryHeap::new();
+//    queue.push(MinHeapEntry{ val:weights[0][0], pos:(0,0) });
+//    mem[0][0] = weights[0][0];
+//    _explore_( m, n, &mut queue, weights, &mut mem);
+//    mem[m-1][n-1]
+//}
+
+
+//fn _explore_(
+//    m:usize, n:usize,
+//    queue:&mut BinaryHeap<MinHeapEntry>,
+//    weights:&[Vec<i32>],
+//    mem:&mut [Vec<i32>]) {
+//    let directions = [(1,0),(!0,0),(0,1),(0,!0)];
+//    while let Some(p) = queue.pop() {
+//        if p.pos == (m-1, n-1) {
+//            return;
+//        }
+//        for (dx,dy) in directions {
+//            let nx = p.pos.0.wrapping_add(dx);
+//            let ny = p.pos.1.wrapping_add(dy);
+//            if nx < m && ny < n {
+//                let cost = mem[p.pos.0][p.pos.1] + weights[nx][ny];
+//                if cost < mem[nx][ny] {
+//                    mem[nx][ny] = cost;
+//                    queue.push(MinHeapEntry { val:cost, pos:(nx, ny) });
+//                }
+//            }
+//        }
+//    }
+//}
 
 
 // fn explore(weights:&[Vec<i32>]) -> i32 {
@@ -94,7 +132,7 @@ fn _explore_(
 //     }
 // }
 
-fn grid() -> Vec<Vec<i32>> {
+fn grid() -> Vec<Vec<usize>> {
     vec![
     vec![1, 3, 1],
     vec![1, 8, 1],
