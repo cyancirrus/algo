@@ -50,7 +50,7 @@ fn _explore_(
     mem:&mut [Vec<i32>]) {
     let directions = [(1,0),(!0,0),(0,1),(0,!0)];
     while let Some(p) = queue.pop() {
-        if p.pos.0 == n-1 && p.pos.1 == m-1 {
+        if p.pos == (m-1, n-1) {
             return;
         }
         for (dx,dy) in directions {
@@ -97,7 +97,7 @@ fn _explore_(
 fn grid() -> Vec<Vec<i32>> {
     vec![
     vec![1, 3, 1],
-    vec![1, -1, 1],
+    vec![1, 8, 1],
     vec![4, 2, 1]
     ]
 }
