@@ -4,8 +4,8 @@ pub struct RingBuffer<T> {
     data:Vec<MaybeUninit<T>>,
     head:usize,
     tail:usize,
-    len:usize,
-    capacity:usize,
+    pub len:usize,
+    pub capacity:usize,
 
 }
 

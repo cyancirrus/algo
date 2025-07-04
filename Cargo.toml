@@ -6,6 +6,7 @@ edition = "2024"
 [dependencies]
 # tokio = { version = "1.45.1", features = ["sync", "rt", "macros", "net"] }
 tokio = { version = "1.45.1", features = ["full"] }
+async-trait = "0.1.88"
 rand = "0.8.5"
 indexmap = "2.9.0"
 futures = "0.3.31"
