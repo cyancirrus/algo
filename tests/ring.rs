@@ -36,6 +36,7 @@ mod tests {
 
     #[test]
     fn test_mutation_memory_cleanup() {
+        assert_eq!(LIVE_COUNT.load(Ordering::SeqCst), 0);
         let mut rb = RingBuffer::new(3);
         rb.pop_front();
         assert_eq!(LIVE_COUNT.load(Ordering::SeqCst), 0);
