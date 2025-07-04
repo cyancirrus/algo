@@ -1,6 +1,6 @@
 use std::mem::MaybeUninit;
 
-struct RingBuffer<T> {
+pub struct RingBuffer<T> {
     data:Vec<MaybeUninit<T>>,
     head:usize,
     tail:usize,
@@ -10,7 +10,7 @@ struct RingBuffer<T> {
 }
 
 impl<T> RingBuffer<T> {
-    fn new(k:usize) -> Self {
+    pub fn new(k:usize) -> Self {
         let mut data = Vec::with_capacity(k);
         data.resize_with(k, MaybeUninit::uninit);
         Self {
@@ -21,7 +21,7 @@ impl<T> RingBuffer<T> {
             capacity:k,
         }
     }
-    fn push_front(&mut self, value:T) {
+    pub fn push_front(&mut self, value:T) {
         if self.len == self.capacity {
             self.head = (self.head + self.capacity - 1) % self.capacity;
             unsafe {
@@ -35,7 +35,7 @@ impl<T> RingBuffer<T> {
             self.len += 1;
         }
     }
-    fn push_back(&mut self, value:T) {
+    pub fn push_back(&mut self, value:T) {
         if self.len == self.capacity {
             unsafe {
                 self.data[self.tail].assume_init_drop();
@@ -49,7 +49,7 @@ impl<T> RingBuffer<T> {
             self.len += 1;
         }
     }
-    fn pop_front(&mut self) -> Option<T> {
+    pub fn pop_front(&mut self) -> Option<T> {
         if self.len == 0 {
             return None;
         }
@@ -60,7 +60,7 @@ impl<T> RingBuffer<T> {
             self.data[idx].assume_init_read()
         })
     }
-    fn pop_tail(&mut self) -> Option<T>{
+    pub fn pop_tail(&mut self) -> Option<T>{
         if self.len == 0 {
             return None;
         }
@@ -73,7 +73,7 @@ impl<T> RingBuffer<T> {
 }
 
 impl <T> RingBuffer<T> {
-    fn iter<'a>(&'a self) -> Iter<'a, T> {
+    pub fn iter<'a>(&'a self) -> Iter<'a, T> {
         Iter::new(&self)
     }
 }
@@ -118,23 +118,5 @@ impl <'a, T> Iterator for Iter<'a, T> {
         };
         self.curs = (self.curs + 1) % self.buff.capacity;
         Some(v)
-    }
-}
-
-fn main() {
-    let mut test = RingBuffer::new(5);
-    for i in 0..5 {
-        test.push_back(i);
-    }
-    test.push_back(5);
-    test.push_front(11);
-    test.pop_tail();
-    test.push_back(100);
-    test.push_back(100);
-    test.push_front(42);
-    let c = test.iter();
-
-    for c in c {
-        println!("Value {c:?}");
     }
 }
