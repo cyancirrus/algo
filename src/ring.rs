@@ -60,7 +60,7 @@ impl<T> RingBuffer<T> {
             self.data[idx].assume_init_read()
         })
     }
-    pub fn pop_tail(&mut self) -> Option<T>{
+    pub fn pop_back(&mut self) -> Option<T>{
         if self.len == 0 {
             return None;
         }
