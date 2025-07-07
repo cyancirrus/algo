@@ -27,12 +27,13 @@ where T: Copy
     pub fn new() -> Self {
         Self { root: None }
     }
-    pub fn from_vec(mut data:VecDeque<Option<T>>) -> Self {
+    pub fn from_vec(mut data:Vec<Option<T>>) -> Self {
+        data.reverse();
         let mut tree = Tree::new();
         let mut queue = VecDeque::new();
         queue.push_back(&mut tree.root);
         while let Some(slot) = queue.pop_front(){
-            if let Some(datum) = data.pop_front() {
+            if let Some(datum) = data.pop() {
                 if let Some(value) = datum {
                     *slot = Some(Box::new(Node {
                         elem:value,
@@ -99,7 +100,6 @@ where T: Copy
         curr_node.as_ref().map(|node| &node.elem)
     }
     pub fn swap(&mut self, first:Option<*mut Node<T>>, second:Option<*mut Node<T>>) {
-        // NOTE: Unsure if this works need to test
         if let (Some(f), Some(s)) = (first, second) {
             unsafe {
                 mem::swap(&mut (*f).elem, &mut (*s).elem)
