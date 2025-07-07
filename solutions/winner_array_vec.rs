@@ -1,5 +1,21 @@
 use std::collections::VecDeque;
+use std::collections::HashMap;
 
+fn winner_array_gen(x:&mut [usize], k:usize) -> usize {
+    let n = x.len();
+    let mut wins = HashMap::new();
+    for i in 0..n-1 {
+        if x[i+1] < x[i] {
+            x.swap(i+1, i);
+        }
+        let entry = wins.entry(x[i+1]).or_insert(0);
+        *entry += 1;
+        if *entry == k {
+            return x[i+1]; 
+        }
+    }
+    x[n-1]
+}
 
 fn winner_array_vec(x:&mut [usize], k:usize) -> usize {
     let n = x.len();
@@ -47,10 +63,19 @@ fn main() {
     // println!("------------------");
     // let result = winner_array_vec(&mut [2,1,3,5,4,6,7], 2);
     // println!("Result {result:}");
-    let result = winner_array_vec(&mut [2,1,3,5,4], 2);
-    println!("Result {result:}");
+    // let result = winner_array_vec(&mut [2,1,3,5,4], 2);
+    // println!("Result {result:}");
     // let result = winner_array_vec(&mut [3,2,1], 10);
     // println!("Result {result:}");
     // let result = winner_array_vec(&mut [1,2,3], 10);
     // println!("Result {result:}");
+    println!("------------------");
+    let result = winner_array_gen(&mut [2,1,3,5,4,6,7], 2);
+    println!("Result {result:}");
+    let result = winner_array_gen(&mut [2,1,3,5,4], 2);
+    println!("Result {result:}");
+    let result = winner_array_gen(&mut [3,2,1], 10);
+    println!("Result {result:}");
+    let result = winner_array_gen(&mut [1,2,3], 10);
+    println!("Result {result:}");
 }
