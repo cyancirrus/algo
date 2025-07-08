@@ -9,7 +9,8 @@ struct Water {
     oxygens:RwLock<usize>,
     del_hydrogens:RwLock<usize>,
     del_oxygens:RwLock<usize>,
-    rebase:RwLock<bool>,
+    rebase_oxygen:RwLock<bool>,
+    rebase_hydrogen:RwLock<bool>,
     available:Notify,
 }
 
@@ -20,22 +21,31 @@ impl Water {
             oxygens:RwLock::new(0),
             del_hydrogens:RwLock::new(0),
             del_oxygens:RwLock::new(0),
-            rebase:RwLock::new(false),
+            rebase_oxygen:RwLock::new(false),
+            rebase_hydrogen:RwLock::new(false),
             available:Notify::new(),
         }
     }
     async fn factory(self: &Arc<Self>) {
         loop {
-            let threshold = *self.rebase.read().await;
-            match threshold { 
-                false => {
+            
+            let (rb_h, rb_o) = (*self.rebase_hydrogen.read().await, *self.rebase_oxygen.read().await);
+            match (rb_h, rb_o) { 
+                (false, false) => {
                     self.available.notified().await;
                     self.create_water().await;
                     self.update().await;
                 },
-                true => {
+                (true, false) => {
+                    self.rebase_hydrogen().await;
+                },
+                (false, true) => {
+                    self.rebase_oxygen().await;
+                },
+                (true, true) => {
                     self.rebase().await;
-                }
+                },
+
             }
         }
     }
@@ -48,6 +58,9 @@ impl Water {
             *gross_h -= *delta_h;
             *delta_h = 0;
         }
+        {
+            *self.rebase_hydrogen.write().await = false;
+        }
     }
 
     async fn rebase_oxygen(&self) {
@@ -57,6 +70,9 @@ impl Water {
             let mut delta_o = self.del_oxygens.write().await;
             *gross_o -= *delta_o;
             *delta_o = 0;
+        }
+        {
+            *self.rebase_oxygen.write().await = false;
         }
     }
 
@@ -80,10 +96,13 @@ impl Water {
     }
 
     async fn rebase(self: &Arc<Self>) {
-        self.rebase_hydrogen().await;
-        self.rebase_oxygen().await;
         {
-            *self.rebase.write().await = false;
+            self.rebase_hydrogen().await;
+            *self.rebase_hydrogen.write().await = false;
+        }
+        {
+            self.rebase_oxygen().await;
+            *self.rebase_oxygen.write().await = false;
         }
     }
 
@@ -103,8 +122,7 @@ impl Water {
         let mut h = self.hydrogens.write().await;
         *h += 1;
         if *h > THRESHOLD {
-            let mut rb = self.rebase.write().await;
-            *rb = true;
+            *self.rebase_hydrogen.write().await = true;
         }
         self.available.notify_one();
     }
@@ -113,8 +131,7 @@ impl Water {
         let mut o = self.oxygens.write().await;
         *o += 1;
         if *o > THRESHOLD {
-            let mut rb = self.rebase.write().await;
-            *rb = true;
+            *self.rebase_oxygen.write().await = true;
         }
         self.available.notify_one();
     }
