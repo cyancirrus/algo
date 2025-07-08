@@ -1,11 +1,15 @@
 use tokio::sync::{Mutex, Notify, RwLock};
 use std::sync::Arc;
 
+// const THRESHOLD:usize = usize::MAX-1<<6;
+const THRESHOLD:usize = 4;
+
 struct Water {
     hydrogens:RwLock<usize>,
     oxygens:RwLock<usize>,
     del_hydrogens:RwLock<usize>,
     del_oxygens:RwLock<usize>,
+    rebase:RwLock<bool>,
     available:Notify,
 }
 
@@ -16,14 +20,43 @@ impl Water {
             oxygens:RwLock::new(0),
             del_hydrogens:RwLock::new(0),
             del_oxygens:RwLock::new(0),
+            rebase:RwLock::new(false),
             available:Notify::new(),
         }
     }
     async fn factory(self: &Arc<Self>) {
         loop {
-            self.available.notified().await;
-            self.create_water().await;
-            self.update().await;
+            let threshold = *self.rebase.read().await;
+            match threshold { 
+                false => {
+                    self.available.notified().await;
+                    self.create_water().await;
+                    self.update().await;
+                },
+                true => {
+                    self.rebase().await;
+                }
+            }
+        }
+    }
+
+    async fn rebase_hydrogen(&self) {
+        {
+            println!("REBASING HYDROGEN");
+            let mut gross_h = self.hydrogens.write().await;
+            let mut delta_h = self.del_hydrogens.write().await;
+            *gross_h -= *delta_h;
+            *delta_h = 0;
+        }
+    }
+
+    async fn rebase_oxygen(&self) {
+        {
+            println!("REBASING OXYGEN");
+            let mut gross_o = self.oxygens.write().await;
+            let mut delta_o = self.del_oxygens.write().await;
+            *gross_o -= *delta_o;
+            *delta_o = 0;
         }
     }
 
@@ -46,6 +79,14 @@ impl Water {
         }
     }
 
+    async fn rebase(self: &Arc<Self>) {
+        self.rebase_hydrogen().await;
+        self.rebase_oxygen().await;
+        {
+            *self.rebase.write().await = false;
+        }
+    }
+
     async fn update(self: &Arc<Self>) {
         {
             let (h_free, o_free) = {(
@@ -61,12 +102,20 @@ impl Water {
         println!("new hydrogen");
         let mut h = self.hydrogens.write().await;
         *h += 1;
+        if *h > THRESHOLD {
+            let mut rb = self.rebase.write().await;
+            *rb = true;
+        }
         self.available.notify_one();
     }
     async fn new_oxygen(self: &Arc<Self>) {
         println!("new oxygen");
         let mut o = self.oxygens.write().await;
         *o += 1;
+        if *o > THRESHOLD {
+            let mut rb = self.rebase.write().await;
+            *rb = true;
+        }
         self.available.notify_one();
     }
 
@@ -88,6 +137,8 @@ async fn main() {
             w2.new_oxygen().await;
         }
     });
+    let rb = water.clone();
+
 
     water.factory().await;
 }
