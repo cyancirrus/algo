@@ -11,6 +11,7 @@ struct Water {
     del_oxygens:RwLock<usize>,
     rebase_oxygen:RwLock<bool>,
     rebase_hydrogen:RwLock<bool>,
+    rebase_gate:RwLock<()>,
     available:Notify,
 }
 
@@ -23,6 +24,7 @@ impl Water {
             del_oxygens:RwLock::new(0),
             rebase_oxygen:RwLock::new(false),
             rebase_hydrogen:RwLock::new(false),
+            rebase_gate:RwLock::new(()),
             available:Notify::new(),
         }
     }
@@ -53,6 +55,7 @@ impl Water {
     async fn rebase_hydrogen(&self) {
         {
             println!("REBASING HYDROGEN");
+            let _guard = self.rebase_gate.write().await;
             let mut gross_h = self.hydrogens.write().await;
             let mut delta_h = self.del_hydrogens.write().await;
             *gross_h -= *delta_h;
@@ -66,6 +69,7 @@ impl Water {
     async fn rebase_oxygen(&self) {
         {
             println!("REBASING OXYGEN");
+            let _guard = self.rebase_gate.write().await;
             let mut gross_o = self.oxygens.write().await;
             let mut delta_o = self.del_oxygens.write().await;
             *gross_o -= *delta_o;
@@ -98,12 +102,11 @@ impl Water {
     async fn rebase(self: &Arc<Self>) {
         {
             self.rebase_hydrogen().await;
-            *self.rebase_hydrogen.write().await = false;
         }
         {
             self.rebase_oxygen().await;
-            *self.rebase_oxygen.write().await = false;
         }
+        self.available.notify_waiters();
     }
 
     async fn update(self: &Arc<Self>) {
@@ -119,20 +122,17 @@ impl Water {
     }
     async fn new_hydrogen(self: &Arc<Self>) {
         println!("new hydrogen");
-        // if someone else is rebasing then wait;
-        let _ = self.rebase_hydrogen.read().await;
+        let _guard = self.rebase_gate.read().await;
         let mut h = self.hydrogens.write().await;
         *h += 1;
         if *h > THRESHOLD {
-            let _ = self.rebase_hydrogen.read().await;
             *self.rebase_hydrogen.write().await = true;
         }
         self.available.notify_one();
     }
     async fn new_oxygen(self: &Arc<Self>) {
         println!("new oxygen");
-        // if someone else is rebasing then wait;
-        let _ = self.rebase_oxygen.read().await;
+        let _guard = self.rebase_gate.read().await;
         let mut o = self.oxygens.write().await;
         *o += 1;
         if *o > THRESHOLD {
@@ -159,7 +159,6 @@ async fn main() {
             w2.new_oxygen().await;
         }
     });
-    let rb = water.clone();
 
 
     water.factory().await;
