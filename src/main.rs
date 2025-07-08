@@ -119,15 +119,20 @@ impl Water {
     }
     async fn new_hydrogen(self: &Arc<Self>) {
         println!("new hydrogen");
+        // if someone else is rebasing then wait;
+        let _ = self.rebase_hydrogen.read().await;
         let mut h = self.hydrogens.write().await;
         *h += 1;
         if *h > THRESHOLD {
+            let _ = self.rebase_hydrogen.read().await;
             *self.rebase_hydrogen.write().await = true;
         }
         self.available.notify_one();
     }
     async fn new_oxygen(self: &Arc<Self>) {
         println!("new oxygen");
+        // if someone else is rebasing then wait;
+        let _ = self.rebase_oxygen.read().await;
         let mut o = self.oxygens.write().await;
         *o += 1;
         if *o > THRESHOLD {
