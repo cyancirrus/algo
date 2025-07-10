@@ -94,7 +94,7 @@ where T: Ord + PartialOrd
     fn remove(&mut self, elem:T) 
     where T:Clone
     {
-        if let Some(e) =  Self::_remove_(&mut self.root, elem) {
+        if let Some(e) =  Self::_remove_(&mut self.root, elem.clone()) {
             Self::_decrement_(&mut self.root, e);
         }
     }
@@ -133,27 +133,37 @@ where T: Ord + PartialOrd
             return Some(elem);
         }
 
-        *link = match (bnode.left.take(), bnode.right.take()) {
-            (None, None) => None,
-            (Some(left), None) => Some(left),
-            (None, Some(right)) => Some(right),
+        let root = match (bnode.left.take(), bnode.right.take()) {
+            (None, None) => {
+                *link = None;
+                elem.clone()
+            },
+            (Some(left), None) => {
+                let new_root = left.elem.clone();
+                *link = Some(left);
+                new_root
+            },
+            (None, Some(right)) => {
+                let new_root = right.elem.clone();
+                Some(right);
+                new_root
+            },
             (Some(left), Some(mut right)) => {
                 let mut min_node = &mut right;
                 while let Some(ref mut l) = min_node.left {
                     min_node = l;
                 }
+                let new_root= min_node.elem.clone();
                 mem::swap(&mut bnode.elem, &mut min_node.elem);
                 mem::swap(&mut bnode.multiplicity, &mut min_node.multiplicity);
                 Self::_remove_(&mut bnode.right, elem);
                 bnode.left = Some(left);
                 bnode.right = Some(right);
-                Some(bnode)
+                *link = Some(bnode);
+                new_root
             }
         };
-        if let Some(n) = link {
-            Some(n.elem.clone());
-        }
-        None
+        Some(root)
     }
 }
 
@@ -165,18 +175,24 @@ fn main() {
     a.insert(12);
     a.insert(1);
     a.insert(1);
+    // // println!("{a:?}");
+    // println!("length {:?}", a.len());
+    // println!("rank 42 {:?}", a.rank(42));
+
+    // println!("select {:?}", a.select(3));
+    // a.remove(13);
+    // println!("rank 42 {:?}", a.rank(42));
+    // a.remove(1);
+    // println!("rank 42 {:?}", a.rank(42));
+    // a.remove(1);
+    // println!("rank 42 {:?}", a.rank(42));
+    // println!("length {:?}", a.len());
+    // println!("{a:?}");
+    // // println!("{a:?}");
     // println!("{a:?}");
     println!("length {:?}", a.len());
-    println!("rank 42 {:?}", a.rank(42));
-
-    println!("select {:?}", a.select(3));
-    a.remove(13);
-    println!("rank 42 {:?}", a.rank(42));
     a.remove(1);
-    println!("rank 42 {:?}", a.rank(42));
     a.remove(1);
-    println!("rank 42 {:?}", a.rank(42));
-    println!("length {:?}", a.len());
     println!("{a:?}");
     // println!("{a:?}");
 }
