@@ -1,6 +1,7 @@
 #![allow(dead_code)]
+use std::mem;
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct Node<T> {
     elem:T,
     left:Link<T>,
@@ -89,6 +90,62 @@ where T: Ord + PartialOrd
         }
         None
     }
+
+    fn remove(&mut self, elem:T) 
+    where T: Clone
+    {
+        if Self::_remove_(&mut self.root, elem.clone()) {
+            Self::_decrement_(&mut self.root, elem);
+        }
+    }
+    fn _decrement_(mut link: &mut Link<T>, elem:T) {
+        while let Some(node) = link {
+            node.nodes -= 1;
+            if elem < node.elem {
+                link = &mut node.left;
+            } else if node.elem < elem {
+                link = &mut node.right;
+            } else {
+                break;
+            }
+        }
+    }
+    fn _remove_(link: &mut Link<T>, elem:T) -> bool
+    where T: Clone
+    {
+        let node = match link {
+            Some(node) => node,
+            None => return false,
+        };
+        if elem < node.elem {
+            return Self::_remove_(&mut node.left, elem);
+        } else if node.elem < elem {
+            return Self::_remove_(&mut node.right, elem);
+        } if node.multiplicity > 1 {
+            node.multiplicity -= 1;
+            return true;
+        }
+        *link = match (node.left.take(), node.right.take()) {
+            (None, None) => None,
+            (Some(left), None) => Some(left),
+            (None, Some(right)) => Some(right),
+            (Some(left), Some(mut right)) => {
+                let mut min_node = &mut right;
+                while let Some(l) = &mut min_node.left {
+                    min_node = l;
+                }
+                mem::swap(&mut node.elem, &mut min_node.elem);
+                mem::swap(&mut node.multiplicity, &mut min_node.multiplicity);
+
+                Self::_remove_(&mut node.right, elem);
+                node.left = Some(left);
+                node.right = Some(right);
+                Some(Box::new(*node.clone()))
+            }
+        };
+        true
+    }
+
 }
 
 fn main() {
@@ -101,8 +158,12 @@ fn main() {
     a.insert(1);
     // println!("{a:?}");
     println!("length {:?}", a.len());
-    println!("rank 42 {:?}", a.rank(2));
+    println!("rank 42 {:?}", a.rank(42));
 
     println!("select {:?}", a.select(3));
+    a.remove(13);
+    println!("rank 42 {:?}", a.rank(42));
+    a.remove(1);
+    println!("rank 42 {:?}", a.rank(42));
 }
 
