@@ -92,10 +92,10 @@ where T: Ord + PartialOrd
     }
 
     fn remove(&mut self, elem:T) 
-    where T: Clone
+    where T:Clone
     {
-        if Self::_remove_(&mut self.root, elem.clone()) {
-            Self::_decrement_(&mut self.root, elem);
+        if let Some(e) =  Self::_remove_(&mut self.root, elem) {
+            Self::_decrement_(&mut self.root, e);
         }
     }
     fn _decrement_(mut link: &mut Link<T>, elem:T) {
@@ -110,10 +110,12 @@ where T: Ord + PartialOrd
             }
         }
     }
-    fn _remove_(link: &mut Link<T>, elem: T) -> bool {
+    fn _remove_(link: &mut Link<T>, elem: T) -> Option<T> 
+    where T: Clone
+    {
         let mut bnode = match link.take() {
             Some(node) => node,
-            None => return false,
+            None => return None,
         };
         if elem < bnode.elem {
             let removed = Self::_remove_(&mut bnode.left, elem);
@@ -128,7 +130,7 @@ where T: Ord + PartialOrd
         if bnode.multiplicity > 1 {
             bnode.multiplicity -= 1;
             *link = Some(bnode);
-            return true;
+            return Some(elem);
         }
 
         *link = match (bnode.left.take(), bnode.right.take()) {
@@ -148,7 +150,10 @@ where T: Ord + PartialOrd
                 Some(bnode)
             }
         };
-        true
+        if let Some(n) = link {
+            Some(n.elem.clone());
+        }
+        None
     }
 }
 
