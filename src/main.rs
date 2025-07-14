@@ -87,12 +87,18 @@ use std::cmp::Ordering;
 
 #[derive(Eq, PartialEq)]
 struct FractionNode {
+    nums:(usize, usize),
     idxs:(usize, usize),
-    val:usize,
 }
+
+
 impl Ord for FractionNode {
     fn cmp(&self, other:&Self) -> Ordering {
-        other.val.cmp(&self.val)
+        // a / b > x / y
+        // a * y > b * x
+        (other.nums.0 * self.nums.1).cmp(
+            &(self.nums.0 * other.nums.1)
+        )
     }
 }
 
@@ -106,12 +112,10 @@ impl PartialOrd for FractionNode {
 fn kth_smallest_prime_factor(arr:&[usize], mut k:usize) -> (usize, usize) {
     let n = arr.len();
     let mut factors = BinaryHeap::with_capacity(n-1);
-    let gcd = arr.iter().fold(1, |u, v| u * v);
-    
     for i in 1..n {
         factors.push(
             FractionNode {
-                val: arr[0] * (gcd / arr[i]),
+                nums: (arr[0], arr[i]),
                 idxs: (0, i),
             }
         )
@@ -122,13 +126,13 @@ fn kth_smallest_prime_factor(arr:&[usize], mut k:usize) -> (usize, usize) {
         if let Some(node) = factors.pop() {
             let (i, j) = node.idxs;
             if k == 0 {
-                return (arr[i], arr[j]);
+                return node.nums;
             }
             if i + 1 < j {
                 factors.push(
                     FractionNode {
+                        nums:(arr[0], arr[i]),
                         idxs: (i+1, j),
-                        val: arr[i+1] * (gcd / arr[j]),
                     }
                 )
             }
