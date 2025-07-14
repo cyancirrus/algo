@@ -6,7 +6,7 @@ fn shortest_unsorted_subarray(x:&[usize]) -> &[usize] {
         l+=1;
     }
     if l == n-1 { return &[] };
-    while r > 0 && x[r] <= x[r-1] {
+    while r > 0 && x[r-1] <= x[r] {
         r-=1;
     }
     // find the lowest and highest vals in the unsorted
@@ -20,7 +20,7 @@ fn shortest_unsorted_subarray(x:&[usize]) -> &[usize] {
     while l > 0 && lowest < x[l-1] {
         l-=1;
     }
-    while r < n-1 && x[r+1] < highest {
+    while r < n-1 && x[r] < highest {
         r+=1;
     }
     &x[l..r]
