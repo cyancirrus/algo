@@ -83,24 +83,16 @@ use std::cmp::Ordering;
 // so i consume (1/5) then i increment it to 2/5 (ie a[i + 1], 5)
 // then i compare the set
 // nice i'm just going to use a binary heap i think that's it nice i'm just going to use a binary
-// heap i think that's it nice i'm just going to use a binary heap i think that's it nice i'm just
-// going to use a binary heap i think that's it
+// heap i think that's it 
 
+#[derive(Eq, PartialEq)]
 struct FractionNode {
     idxs:(usize, usize),
-    val:f64,
+    val:usize,
 }
-
-impl PartialEq for FractionNode {
-    fn eq(&self, other: &Self) -> bool {
-        self.idxs == other.idxs
-    }
-}
-impl Eq for FractionNode { }
-
 impl Ord for FractionNode {
     fn cmp(&self, other:&Self) -> Ordering {
-        other.val.total_cmp(&self.val)
+        other.val.cmp(&self.val)
     }
 }
 
@@ -114,11 +106,12 @@ impl PartialOrd for FractionNode {
 fn kth_smallest_prime_factor(arr:&[usize], mut k:usize) -> (usize, usize) {
     let n = arr.len();
     let mut factors = BinaryHeap::with_capacity(n-1);
+    let gcd = arr.iter().fold(1, |u, v| u * v);
     
     for i in 1..n {
         factors.push(
             FractionNode {
-                val: (arr[0] as f64 / arr[i] as f64),
+                val: arr[0] * (gcd / arr[i]),
                 idxs: (0, i),
             }
         )
@@ -135,13 +128,12 @@ fn kth_smallest_prime_factor(arr:&[usize], mut k:usize) -> (usize, usize) {
                 factors.push(
                     FractionNode {
                         idxs: (i+1, j),
-                        val: (arr[i+1] as f64 / arr[j] as f64),
+                        val: arr[i+1] * (gcd / arr[j]),
                     }
                 )
             }
         }
     }
-
 }
 
 
