@@ -1,7 +1,8 @@
 use std::mem::MaybeUninit;
 
+#[derive(Debug)]
 pub struct RingBuffer<T> {
-    data:Vec<MaybeUninit<T>>,
+    pub data:Vec<MaybeUninit<T>>,
     head:usize,
     tail:usize,
     pub len:usize,
@@ -19,6 +20,15 @@ impl<T> RingBuffer<T> {
             tail:0,
             len:0,
             capacity:k,
+        }
+    }
+    pub fn head(&self) -> Option<&T> {
+        if self.len > 0 {
+            unsafe {
+                Some(&*self.data[self.head].as_ptr())
+            }
+        } else {
+            None
         }
     }
     pub fn push_front(&mut self, value:T) {
