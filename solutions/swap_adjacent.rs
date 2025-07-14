@@ -24,6 +24,9 @@ fn swap_adjacent(start:&str, result:&str) -> bool {
         if start_index == n || result_index == n {
             return false;
         }
+        if start[start_index] != result[result_index] {
+            return false;
+        }
         if start[start_index] == b'R' && result_index < start_index {
             // cannot transform XXR into RXX
             return false;
