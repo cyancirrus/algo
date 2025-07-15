@@ -1,5 +1,3 @@
-Absolutely! Here's a more concise README in Markdown for your algo studies repo:
-
 # Algorithm Studies Repository
 
 A personal collection of Rust solutions to algorithmic problems, designed to build and document problem-solving skills across various domains.
