@@ -11,6 +11,16 @@ A personal collection of Rust solutions to algorithmic problems, designed to bui
   - Parallelism & async with Tokio and Rayon  
   - Data structures and optimization
 
+## Progress Snapshot (as of July 2025)
+
+- ✅ ~100+ algorithm problems solved
+- ✅ Core DSA patterns: arrays, sliding windows, recursion, backtracking
+- ✅ Dynamic Programming: subset sum, coin change, triangle min path
+- ✅ Graph algorithms: DFS, BFS, Dijkstra's, islands, enclaves
+- ✅ Bitmasking and Sudoku solvers
+- ✅ Concurrency with async/await and channels
+- ✅ Built from-scratch data structures: linked lists, tries, ring buffers
+
 ## Repository Structure
 
 All solutions are in the `solutions/` folder as standalone Rust files:
