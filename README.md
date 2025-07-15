@@ -2,6 +2,8 @@
 
 A personal collection of Rust solutions to algorithmic problems, designed to build and document problem-solving skills across various domains.
 
+Why: This repository is a work journal for personal mastery in algorithms and Rust. It is not polished for tutorials but represents raw, consistent practice.
+
 ## Overview
 
 - **Goal:** Practice and learn algorithms, data structures, concurrency, and Rust idioms.
