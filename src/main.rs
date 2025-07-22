@@ -1,142 +1,107 @@
-// want a basic ? and * regex
-// ? = single none
-// * = anything
-//
-// knowns all regexes can be compiled into a state machine ie a DAG i think b/c u need extended
-// regex for recursion
-//
-// match should cover the entire thing
-// -- assume that like
-// fn wm("*a", "alskdfjaskdljfas"); shouldn't match
-// here could search from the reverse
-//
-// hmmm there are two options so might be able to like levenshtein this thing
-// left | right dp table,
-// options are we could * or we could ?
-// so like given can we do this tho with the table would it just contain like the character?
+use std::cell::RefCell;
+use std::rc::Rc;
+use std::collections::BTreeMap;
+
+type Capacity = usize;
+const ALLOCATED_STACK_MEM:Capacity = 1024;
 
 
-// * abc * 
-// hi abc wrld
-//
-//   * a b c *
-// h *  
-// i *
-// a * a a a
-// b * * b b
-// c * * c c
-// w * * * *
-// r * * * *
-// l * * * *
-// d * * * *
+struct Allocation {
+    capacity:Capacity,
+    head:usize,
+    tail:usize,
+}
 
-// hmmm maybe if we just consider "*" then we simply need to check of in an order that we see the
-// strings
-//
-// like status = * (anything, watch for character a) if we match char then see if we match full if
-// not reset, but if we have like a next index to chceck while parsing that would stink ie
-//
-// hiababcworld
-//  when we hit ab abc, we need to track a when we hit it, or the first letter so need to track
-//  - the position in the regex we are trying to match, any potentials
-//  - the last valid state (ie say wildcard) consider, so after exhausting the stack and state
-//  here state can just be like "regex index" so if we clear the queue to check we can flip back to
-//  last regex that was valid
+struct ArenaAllocator<T> {
+    mem: [Option<T>;ALLOCATED_STACK_MEM],
+    head:usize,
+    tail:usize,
+    freed:BTreeMap<Capacity, Vec<Allocation>>,
+    capacity:usize,
+}
 
+type Arena<T> = Rc<RefCell<ArenaAllocator<T>>>;
 
-//// simplified version in order to match *'s
-//fn wildcard_match(regex:&str, text:&str) -> bool{
-//    let regex = regex.as_bytes();
-//    let text = text.as_bytes();
-//    let rlen = regex.len();
-//    let tlen = text.len();
-//    //rgx, idx 
-//    let mut potentials:Vec<(usize, usize)> = vec![(0,0)];
-//    while let Some( (ref mut r, ref mut t)) = potentials.pop() {
-//        let pre_r = *r;
-//        *r +=1;
-//        *t +=1;
-//        println!("r {r:}, t {t:}"); 
-//        loop {
-//            // Handle boundary conditions
-//            if *r == rlen && *t == tlen {
-//                // fully matched
-//                return true;
-//            } else if *r >= rlen || *t >= tlen{ 
-//                // did not fully match try other options
-//                break;
-//            } 
-//            if regex[*r] == b'*' {
-//                // new potential wildcard
-//                potentials.push((*r, *t));
-//                println!("Potentials {potentials:?}");
-//                // no match
-//                potentials.push((*r+1, *t));
-//            }
-//            if regex[pre_r] == b'*'{
-//                // push potential matches
-//                potentials.push((pre_r, *t));
-//            }
-//            if regex[*r] == text[*t] {
-//                *r +=1;
-//                *t +=1;
-//                continue;
-//            }
-//            break;
-//        }
-//    }
-//    println!("here");
-//    false
-//}
+impl <T> ArenaAllocator<T> 
+where T: Copy
+{
+    fn new() -> Self {
+        Self {
+            mem:[None;ALLOCATED_STACK_MEM],
+            head:0,
+            tail:0,
+            freed:BTreeMap::new(),
+            capacity: ALLOCATED_STACK_MEM,
 
-fn wildcard_match(regex:&str, text:&str) -> bool {
-    let regex = regex.as_bytes();
-    let text = text.as_bytes();
-    let rlen = regex.len();
-    let tlen = text.len();
-    //rgx, idx 
-    let mut potentials:Vec<(usize, usize)> = vec![(0,0)];
-    while let Some( (ref mut r, ref mut t)) = potentials.pop() {
-        *t +=1;
-        loop {
-            println!("r {r:}, t {t:}"); 
-            // Handle boundary conditions
-            if *r == rlen && *t == tlen {
-                // fully matched
-                return true;
-            } else if *r >= rlen || *t >= tlen{ 
-                // did not fully match try other options
-                break;
-            }
-            if regex[*r] == text[*t] {
-                *r +=1;
-                *t +=1;
-                continue;
-            }
-            // greedy match this
-            if regex[*r] == b'*' {
-                potentials.push((*r, *t));
-                potentials.push((*r+1, *t));
-                *t+=1;
-            } else if regex[*r] == b'?' {
-                // if required letter
-                potentials.push((*r+1, *t));
-                *t+=1;
-                // if not required
-                // continue;
-            }
-            break;
         }
     }
-    false
+    fn allocate(&mut self, size:Capacity) -> Result <Allocation, &'static str> {
+        if let Some(f) = self.freed.get_mut(&size) {
+            if let Some(m) = f.pop() {
+                return Ok(m)
+            }
+        }
+        if size < self.capacity - self.tail  {
+            let alloc = Allocation {
+                capacity:size,
+                head:self.tail,
+                tail:self.tail + size,
+            };
+            self.tail += size;
+            Ok(alloc)
+        } else {
+            Err("Memory exceeded either too fragmented or at capacity")
+        }
+    }
+    fn free(&mut self, alloc:Allocation) -> Result <(), &'static str> {
+        for v in &mut self.mem[alloc.head..alloc.tail] {
+            *v = None;
+        };
+        Ok(self.freed.entry(alloc.capacity).or_default().push(alloc))
+    }
+}
+
+struct ArenaInterface<T> {
+    allocation:Allocation,
+    arena:Arena<T>
+}
+
+impl <T> ArenaInterface<T> {
+    fn new(arena:&Arena<T>, size:Capacity) -> Result<Self, &'static str> {
+        let a = arena.clone();
+        match a.borrow_mut().allocate(size) {
+            Ok(alloc) => {
+                Ok(Self {
+                    allocation:alloc,
+                    arena:a,
+                }
+                )
+            },
+            Err(e) => {
+                Err(e)
+            }
+        }
+    }
+    fn insert(&mut self, val:T) {
+        let a = self.arena.borrow_mut();
+        a.mem[self.allocation.tail] = val;
+        self.allocation.tail += 1;
+    }
+    fn view(&self) {
+        println!("
+            Current Data {:?}",
+            &self.arena[self.allocation.head..self.allocation.tail]
+        )
+    }
 }
 
 
 fn main() {
-    // assert!(wildcard_match("*abc*", "hi abc world"));
-    // assert!(wildcard_match("*", "hi abc world"));
-    // assert!(wildcard_match("**", "hi abc world"));
-    // assert!(wildcard_match("*abc*", "hi ab abc world"));
-    assert!(wildcard_match("*a", "aaaaa"));
+    let mut arena: Arena<usize> = Rc::new(RefCell::new(ArenaAllocator::new()));
+    let xarena = ArenaInterface::new(&arena, 128);
+    let yarena = ArenaInterface::new(&arena, 256);
 
+
+    // xarena.lock().allocate(216);
+    // xarena.
 }
