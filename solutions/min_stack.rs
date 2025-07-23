@@ -1,31 +1,38 @@
 use std::collections::BinaryHeap;
 use std::collections::HashMap;
+use std::hash::Hash;
 use std::cmp::Ordering;
 
 #[derive(Eq, PartialEq)]
-struct MinNode {
-    val:i8,
+struct MinNode <T> {
+    val:T,
 }
 
-impl Ord for MinNode {
+impl <T> Ord for MinNode <T> 
+where T:Eq + PartialEq + Ord
+{
     fn cmp(&self, other:&Self) -> Ordering {
         other.val.cmp(&self.val)
     }
 }
 
-impl PartialOrd for MinNode {
+impl <T> PartialOrd for MinNode<T> 
+where T:Eq + PartialEq + Ord
+{
     fn partial_cmp(&self, other:&Self) -> Option<Ordering> {
         Some(self.cmp(other))
     }
 }
 
-struct MinStack {
-    min:BinaryHeap<MinNode>,
-    stack:Vec<i8>,
-    discarded:HashMap<i8, usize>,
+struct MinStack <T> {
+    min:BinaryHeap<MinNode<T>>,
+    stack:Vec<T>,
+    discarded:HashMap<T, usize>,
 }
 
-impl MinStack {
+impl <T> MinStack <T> 
+where T: Hash + Eq + PartialEq + Ord + Copy
+{
     fn new() -> Self {
         Self {
             min:BinaryHeap::new(),
@@ -33,14 +40,10 @@ impl MinStack {
             discarded:HashMap::new(),
         }
     }
-    fn top(&self) -> Option<&i8> {
-        if self.stack.len() > 0 {
-            return Some(self.stack.last()?)
-        } else {
-            None
-        }
+    fn top(&self) -> Option<&T> {
+        Some(self.stack.last()?)
     }
-    fn pop(&mut self) -> Option<i8> {
+    fn pop(&mut self) -> Option<T> {
         if let Some(v) = self.stack.pop() {
             if let Some(h) = self.min.peek()  {
                 if h.val == v {
@@ -54,16 +57,15 @@ impl MinStack {
             None
         }
     }
-    fn push(&mut self, val:i8) {
+    fn push(&mut self, val:T) {
         self.stack.push(val);
         self.min.push(MinNode{val});
     }
-    fn get_min(&mut self) -> Option<i8> {
+    fn get_min(&mut self) -> Option<T> {
         while let Some(h) = self.min.peek() {
             if let Some(d) = self.discarded.get_mut(&h.val) {
-                if *d > 0 {
-                    *d -= 1;
-                } else {
+                *d -= 1;
+                if *d == 0 {
                     self.discarded.remove(&h.val);
                 }
                 self.min.pop();
