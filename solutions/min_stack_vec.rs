@@ -4,20 +4,18 @@ use std::hash::Hash;
 use std::cmp::Ordering;
 
 
-struct MinMaxStack <T> {
+struct MinStack <T> {
     stack:Vec<T>,
     min:Vec<T>,
-    max:Vec<T>,
 }
 
-impl <T> MinMaxStack <T> 
+impl <T> MinStack <T> 
 where T: Eq + PartialEq + Ord + Copy
 {
     fn new() -> Self {
         Self {
             stack:Vec::new(),
             min:Vec::new(),
-            max:Vec::new(),
         }
     }
     fn top(&self) -> Option<&T> {
@@ -30,11 +28,6 @@ where T: Eq + PartialEq + Ord + Copy
                     self.min.pop();
                 }
             }
-            if let Some(h) = self.max.last()  {
-                if *h == v {
-                    self.max.pop();
-                }
-            }
             Some(v)
         } else {
             None
@@ -45,15 +38,9 @@ where T: Eq + PartialEq + Ord + Copy
         if self.min.is_empty() || val <= *self.min.last().unwrap() {
             self.min.push(val);
         }
-        if self.max.is_empty() || val >= *self.max.last().unwrap() {
-            self.max.push(val);
-        }
     }
     fn get_min(&mut self) -> Option<&T> {
         self.min.last()
-    }
-    fn get_max(&mut self) -> Option<&T> {
-        self.max.last()
     }
 }
 
