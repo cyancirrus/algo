@@ -5,3 +5,4 @@ pub mod ring;
 pub mod stack;
 pub mod tree;
 pub mod tree_solutions;
+pub mod lru;
