@@ -27,7 +27,7 @@ struct LinkedList <T> {
     _ghost: PhantomData<T>,
 }
 
-struct LruCache <T> {
+pub struct LruCache <T> {
     capacity:usize,
     entries: LinkedList<T>,
     position: HashMap<usize, NonNull<Node<T>>>,
@@ -36,7 +36,7 @@ struct LruCache <T> {
 
 impl <T> LruCache <T>
 {
-    fn new(capacity:usize) -> Self {
+    pub fn new(capacity:usize) -> Self {
         Self {
             capacity,
             entries: LinkedList::new(),
@@ -44,22 +44,20 @@ impl <T> LruCache <T>
             _ghost: PhantomData,
         }
     }
-    fn get(&mut self, key:usize) -> Option<&T> {
+    pub fn get(&mut self, key:usize) -> Option<&T> {
         unsafe {
             let node = self.position.get(&key)?;
             self.entries.detach_node(*node);
-            self.entries.reinsert_node(*node);
+            self.entries.push_back_node(*node);
             Some(&(*node.as_ptr()).val)
         }
     }
-    fn update(&mut self, key:usize, val:T) {
+    pub fn update(&mut self, key:usize, val:T) {
         unsafe {
             if let Some(node) = self.position.get(&key) {
                 self.entries.detach_node(*node);
-                (*node.as_ptr()).next = None;
-                (*node.as_ptr()).prev = None;
                 (*node.as_ptr()).val = val;
-                self.entries.reinsert_node(*node);
+                self.entries.push_back_node(*node);
             } else {
                 if self.entries.len >= self.capacity {
                     if let Some(node) = self.entries.pop_front() {
@@ -74,7 +72,7 @@ impl <T> LruCache <T>
             }
         }
     }
-    fn remove(&mut self, key:usize) {
+    pub fn remove(&mut self, key:usize) {
         unsafe {
             if let Some(node) = self.position.remove(&key) {
                 self.entries.detach_node(node);
@@ -117,7 +115,7 @@ impl <T> LinkedList <T> {
             new
         }
     }
-    fn reinsert_node(&mut self, node:NonNull<Node<T>>) {
+    fn push_back_node(&mut self, node:NonNull<Node<T>>) {
         unsafe {
             if let Some(old) = self.tail {
                 (*old.as_ptr()).next = Some(node);
@@ -151,6 +149,8 @@ impl <T> LinkedList <T> {
                     self.tail = None;
                 }
             };
+            (*node.as_ptr()).next = None;
+            (*node.as_ptr()).prev = None;
             self.len -= 1;
         }
     }

@@ -49,8 +49,6 @@ impl <T> LruCache <T>
         unsafe {
             if let Some(node) = self.position.get(&key) {
                 self.entries.detach_node(*node);
-                (*node.as_ptr()).next = None;
-                (*node.as_ptr()).prev = None;
                 (*node.as_ptr()).val = val;
                 self.entries.push_back_node(*node);
             } else {
@@ -144,6 +142,8 @@ impl <T> LinkedList <T> {
                     self.tail = None;
                 }
             };
+            (*node.as_ptr()).next = None;
+            (*node.as_ptr()).prev = None;
             self.len -= 1;
         }
     }
