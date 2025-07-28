@@ -170,7 +170,6 @@ impl <T> LinkedList <T> {
         }
     }
     fn push_back(&mut self, key:usize, val:T) -> NonNull<Node<T>> {
-        println!("here");
         unsafe {
             let new = NonNull::new_unchecked(Box::into_raw(Box::new(Node {
                 key,
