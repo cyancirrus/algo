@@ -84,12 +84,6 @@ async fn fizzbuzz(n: usize) {
     Organize by category/difficulty
     Explore async and parallel algorithms further
 
-
-Feel free to ask if you'd like help adding templates or restructuring!
-
-Want me to help format your project files with README headers or something similar?
-
-
 # Quick Functions Resource 
 ```bash
 cloc . --exclude-dir=target
