@@ -16,7 +16,7 @@ struct Node<T> {
 type Link<T> = Option<Box<Node<T>>>;
 
 
-struct LruCache <T>{
+pub struct LruCache <T>{
     capacity:usize,
     order:VecDeque<usize>,
     cache:HashMap<usize, T>,
