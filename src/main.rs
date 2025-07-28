@@ -47,14 +47,10 @@ impl <T> LruCache <T>
     }
     fn get(&mut self, key:usize) -> Option<&T> {
         unsafe {
-            if let Some(node) = self.position.remove(&key) {
-                self.entries.detach_node(node);
-                self.entries.append_node(node);
-                self.position.insert(key, node);
-                Some(&(*node.as_ptr()).val)
-            } else {
-                None
-            }
+            let node = self.position.get(&key)?;
+            self.entries.detach_node(*node);
+            self.entries.reinsert_node(*node);
+            Some(&(*node.as_ptr()).val)
         }
     }
     fn update(&mut self, key:usize, val:T) {
@@ -64,7 +60,7 @@ impl <T> LruCache <T>
                 (*node.as_ptr()).next = None;
                 (*node.as_ptr()).prev = None;
                 (*node.as_ptr()).val = val;
-                self.entries.append_node(*node);
+                self.entries.reinsert_node(*node);
             } else {
                 if self.entries.len >= self.capacity {
                     if let Some(node) = self.entries.pop_front() {
@@ -123,7 +119,7 @@ impl <T> LinkedList <T> {
             new
         }
     }
-    fn append_node(&mut self, node:NonNull<Node<T>>) {
+    fn reinsert_node(&mut self, node:NonNull<Node<T>>) {
         unsafe {
             if let Some(old) = self.tail {
                 (*old.as_ptr()).next = Some(node);
@@ -156,8 +152,6 @@ impl <T> LinkedList <T> {
                     self.tail = None;
                 }
             }
-            // (*node.as_ptr()).prev = None;
-            // (*node.as_ptr()).next = None;
         }
     }
     fn push_back(&mut self, key:usize, val:T) -> NonNull<Node<T>> {
@@ -181,36 +175,30 @@ impl <T> LinkedList <T> {
     }
     fn pop_front(&mut self) -> Option<Node<T>> {
         unsafe {
-            if let Some(node) = self.head.take() {
-                let bnode = Box::from_raw(node.as_ptr());
-                self.head = bnode.next;
-                if let Some(new) = bnode.next {
-                    (*new.as_ptr()).prev = None;
-                } else {
-                    self.tail = None;
-                }
-                self.len -= 1;
-                Some(*bnode)
+            let node = self.head.take()?;
+            let bnode = Box::from_raw(node.as_ptr());
+            self.head = bnode.next;
+            if let Some(new) = bnode.next {
+                (*new.as_ptr()).prev = None;
             } else {
-                None
+                self.tail = None;
             }
+            self.len -= 1;
+            Some(*bnode)
         }
     }
     fn pop_back(&mut self) -> Option<Node<T>> {
         unsafe {
-            if let Some(node) = self.tail.take() {
-                let bnode = Box::from_raw(node.as_ptr());
-                self.tail = bnode.prev;
-                if let Some(new) = bnode.prev {
-                    (*new.as_ptr()).next = None;
-                } else {
-                    self.head = None;
-                }
-                self.len -= 1;
-                Some(*bnode)
+            let node = self.tail.take()?;
+            let bnode = Box::from_raw(node.as_ptr());
+            self.tail = bnode.prev;
+            if let Some(new) = bnode.prev {
+                (*new.as_ptr()).next = None;
             } else {
-                None
+                self.head = None;
             }
+            self.len -= 1;
+            Some(*bnode)
         }
     }
 }
@@ -239,6 +227,7 @@ fn main() {
     cache.update(4, "d");
     assert_eq!(cache.get(4), Some(&"d"));
     cache.update(5, "e"); // Should evict LRU (which is 1)
+    assert_eq!(cache.get(1000), None);         // none
     assert_eq!(cache.get(1), None);         // evicted
     assert_eq!(cache.get(3), Some(&"c"));   // still in
     assert_eq!(cache.get(5), Some(&"e"));   // just added

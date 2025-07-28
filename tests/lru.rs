@@ -1,6 +1,6 @@
 #[cfg(test)]
 mod tests {
-    use super::*;
+    use prepatory::lru::*;
 
     #[test]
     fn test_basic_lru_cache_behavior() {
