@@ -8,9 +8,9 @@
 use std::ptr::NonNull;
 use std::collections::HashMap;
 use std::marker::PhantomData;
+use std::fmt::Debug;
 
 type Link <T> = Option<NonNull<Node<T>>>;
-
 
 struct Node <T> {
     key:usize,
@@ -19,6 +19,7 @@ struct Node <T> {
     next:Link<T>,
 }
 
+#[derive(Debug)]
 struct LinkedList <T> {
     len: usize,
     head: Link<T>,
@@ -26,79 +27,73 @@ struct LinkedList <T> {
     _ghost: PhantomData<T>,
 }
 
-struct MapCursor<T> {
-    // key -> pointer in LinkedList
+struct LruCache <T> {
     capacity:usize,
-    list: LinkedList<T>,
+    entries: LinkedList<T>,
     position: HashMap<usize, NonNull<Node<T>>>,
     _ghost: PhantomData<T>,
 }
 
-impl <T> MapCursor <T> {
-    fn new() -> Self {
+
+impl <T> LruCache <T>
+{
+    fn new(capacity:usize) -> Self {
         Self {
-            capacity:1024,
-            list: LinkedList::new(),
+            capacity,
+            entries: LinkedList::new(),
             position: HashMap::new(),
             _ghost: PhantomData,
         }
     }
-    fn new_from_list(&self, list:LinkedList<T>) -> Self {
-        Self {
-            capacity:1024,
-            list,
-            position: HashMap::new(),
-            _ghost: PhantomData, 
-        }
-    }
-    fn _stitch_(&mut self, key:usize) -> Option<NonNull<Node<T>>> {
+    fn get(&mut self, key:usize) -> Option<&T>
+        where T:Debug
+    {
+        println!("position appears as {:?}", self.position);
+        // println!("entries appears as {:?}", self.entries.head);
         unsafe {
-            if let Some(node) = self.position.get(&key) {
-                let pnode = (*node.as_ptr()).prev;
-                let nnode = (*node.as_ptr()).next;
-                match (pnode, nnode) {
-                    (Some(prev), Some(next)) => {
-                        (*prev.as_ptr()).next = Some(next);
-                        (*next.as_ptr()).prev = Some(prev);
-                    },
-                    (Some(prev), None) => {
-                        (*prev.as_ptr()).next = None;
-                        self.list.tail = None;
-                    },
-                    (None, Some(next)) => {
-                        (*next.as_ptr()).prev = None;
-                        self.list.head = Some(next);
-                    }
-                    (None, None) => {
-                        self.list.head = None;
-                        self.list.tail = None;
-                    }
-                };
-                return Some(*node)
+            if let Some(node) = self.position.remove(&key) {
+                self.entries.detach_node(node);
+                self.entries.append_node(node);
+                self.position.insert(key, node);
+                Some(&(*node.as_ptr()).val)
+            } else {
+                None
             }
         }
-        None
     }
-    fn update(&mut self, key:usize, val:T) {
+    fn update(&mut self, key:usize, val:T)
+        where T:Debug
+    {
         unsafe {
-            if let Some(node) = self._stitch_(key) {
+            if let Some(node) = self.position.remove(&key) {
+                self.entries.detach_node(node);
                 (*node.as_ptr()).next = None;
                 (*node.as_ptr()).prev = None;
-                self.list.append(node);
+                (*node.as_ptr()).val = val;
+                self.entries.append_node(node);
                 self.position.insert(key, node);
-            } else if self.list.len < self.capacity {
+            } else {
+                if self.entries.len >= self.capacity {
+                    println!("hello world");
+                    if let Some(node) = self.entries.pop_front() {
+                        println!("node popped {:?}", node.key);
+                        self.position.remove(&node.key);
+                    }
+                }
                 self.position.insert(
                     key, 
-                    self.list.push_back(key, val)
+                    self.entries.push_back(key, val)
                 );
+
             }
         }
+        println!("position appears as {:?}", self.position);
     }
     fn remove(&mut self, key:usize) {
         unsafe {
-            if let Some(node) = self._stitch_(key) {
-                self.position.remove(&key);
-                self.list.len -= 1;
+            if let Some(node) = self.position.remove(&key) {
+                self.entries.detach_node(node);
+                self.entries.len -= 1;
                 drop(
                     Box::from_raw(node.as_ptr())
                 )
@@ -119,7 +114,7 @@ impl <T> LinkedList <T> {
     fn len(&self) -> usize {
         self.len
     }
-    fn push_front(&mut self, key:usize, val:T) {
+    fn push_front(&mut self, key:usize, val:T) -> NonNull<Node<T>> {
         unsafe {
             let new = NonNull::new_unchecked(Box::into_raw(Box::new(Node {
                 key,
@@ -135,10 +130,12 @@ impl <T> LinkedList <T> {
             }
             self.head = Some(new);
             self.len += 1;
+            new
         }
     }
-    fn append(&mut self, node:NonNull<Node<T>>) {
+    fn append_node(&mut self, node:NonNull<Node<T>>) {
         unsafe {
+            println!("node key {:?}", (*node.as_ptr()).key);
             if let Some(old) = self.tail {
                 (*old.as_ptr()).next = Some(node);
                 (*node.as_ptr()).prev = Some(old);
@@ -148,7 +145,32 @@ impl <T> LinkedList <T> {
             self.tail = Some(node);
         }
     }
+    fn detach_node(&mut self, node:NonNull<Node<T>>) {
+        unsafe {
+            let pnode = (*node.as_ptr()).prev;
+            let nnode = (*node.as_ptr()).next;
+            match (pnode, nnode) {
+                (Some(prev), Some(next)) => {
+                    (*prev.as_ptr()).next = Some(next);
+                    (*next.as_ptr()).prev = Some(prev);
+                },
+                (Some(prev), None) => {
+                    (*prev.as_ptr()).next = None;
+                    self.tail = None;
+                },
+                (None, Some(next)) => {
+                    (*next.as_ptr()).prev = None;
+                    self.head = Some(next);
+                }
+                (None, None) => {
+                    self.head = None;
+                    self.tail = None;
+                }
+            }
+        }
+    }
     fn push_back(&mut self, key:usize, val:T) -> NonNull<Node<T>> {
+        println!("here");
         unsafe {
             let new = NonNull::new_unchecked(Box::into_raw(Box::new(Node {
                 key,
@@ -167,7 +189,7 @@ impl <T> LinkedList <T> {
             new
         }
     }
-    fn pop_front(&mut self) -> Option<T> {
+    fn pop_front(&mut self) -> Option<Node<T>> {
         unsafe {
             if let Some(node) = self.head.take() {
                 let bnode = Box::from_raw(node.as_ptr());
@@ -178,13 +200,13 @@ impl <T> LinkedList <T> {
                     self.tail = None;
                 }
                 self.len -= 1;
-                Some(bnode.val)
+                Some(*bnode)
             } else {
                 None
             }
         }
     }
-    fn pop_back(&mut self) -> Option<T> {
+    fn pop_back(&mut self) -> Option<Node<T>> {
         unsafe {
             if let Some(node) = self.tail.take() {
                 let bnode = Box::from_raw(node.as_ptr());
@@ -195,46 +217,12 @@ impl <T> LinkedList <T> {
                     self.head = None;
                 }
                 self.len -= 1;
-                Some(bnode.val)
-
+                Some(*bnode)
             } else {
                 None
             }
         }
     }
-    // fn pop_back(&mut self) -> Option<T> {
-    //     unsafe {
-    //         self.tail.map(|node| {
-    //             // Ensure memory is freed using box
-    //             let bnode = Box::from_raw(node.as_ptr());
-    //             let result = bnode.val;
-    //             self.tail = bnode.prev;
-    //             if let Some(new) = self.tail {
-    //                 (*new.as_ptr()).next = None
-    //             } else {
-    //                 self.head = None;
-    //             }
-    //             self.len -= 1;
-    //             result   
-    //         })
-    //     }
-    // }
-    // fn pop_front(&mut self) -> Option<T> {
-    //     unsafe {
-    //         self.head.map(|node| {
-    //             // Ensure memory is freed using box
-    //             let bnode = Box::from_raw(node.as_ptr());
-    //             let result = bnode.val;
-    //             self.head = bnode.next;
-    //             if let Some(new) = bnode.next {
-    //                 (*new.as_ptr()).prev = None;
-    //             } else {
-    //                 self.tail = None;
-    //             }
-    //             self.len -= 1;
-    //             result
-    //         })
-    //     }
 }
 
 impl <T> Drop for LinkedList<T> {
@@ -246,6 +234,23 @@ impl <T> Drop for LinkedList<T> {
 
 
 fn main() {
-    let mut abc = vec![0,1,2];
-    abc[0]=100;
+    let mut cache = LruCache::new(3);
+    cache.update(1, "a");
+    cache.update(2, "b");
+    cache.update(3, "c");
+    assert_eq!(cache.get(1), Some(&"a"));
+    assert_eq!(cache.get(2), Some(&"b"));
+    assert_eq!(cache.get(3), Some(&"c"));
+    cache.update(2, "bb"); // Should move 2 to MRU
+    assert_eq!(cache.get(2), Some(&"bb"));
+    cache.remove(2);
+    assert_eq!(cache.get(2), None);
+    println!("---------");
+    cache.update(4, "d");
+    assert_eq!(cache.get(4), Some(&"d"));
+    println!("-----------");
+    cache.update(5, "e"); // Should evict LRU (which is 1)
+    assert_eq!(cache.get(1), None);         // evicted
+    // assert_eq!(cache.get(3), Some(&"c"));   // still in
+    // assert_eq!(cache.get(5), Some(&"e"));   // just added
 }
