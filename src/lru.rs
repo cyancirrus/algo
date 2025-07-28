@@ -27,7 +27,6 @@ pub struct LruCache <T> {
     _ghost: PhantomData<T>,
 }
 
-
 impl <T> LruCache <T>
 {
     pub fn new(capacity:usize) -> Self {
@@ -42,7 +41,7 @@ impl <T> LruCache <T>
         unsafe {
             let node = self.position.get(&key)?;
             self.entries.detach_node(*node);
-            self.entries.reinsert_node(*node);
+            self.entries.push_back_node(*node);
             Some(&(*node.as_ptr()).val)
         }
     }
@@ -53,7 +52,7 @@ impl <T> LruCache <T>
                 (*node.as_ptr()).next = None;
                 (*node.as_ptr()).prev = None;
                 (*node.as_ptr()).val = val;
-                self.entries.reinsert_node(*node);
+                self.entries.push_back_node(*node);
             } else {
                 if self.entries.len >= self.capacity {
                     if let Some(node) = self.entries.pop_front() {
@@ -72,7 +71,6 @@ impl <T> LruCache <T>
         unsafe {
             if let Some(node) = self.position.remove(&key) {
                 self.entries.detach_node(node);
-                self.entries.len -= 1;
                 drop(
                     Box::from_raw(node.as_ptr())
                 )
@@ -112,7 +110,7 @@ impl <T> LinkedList <T> {
             new
         }
     }
-    fn reinsert_node(&mut self, node:NonNull<Node<T>>) {
+    fn push_back_node(&mut self, node:NonNull<Node<T>>) {
         unsafe {
             if let Some(old) = self.tail {
                 (*old.as_ptr()).next = Some(node);
@@ -121,6 +119,7 @@ impl <T> LinkedList <T> {
                 self.head = Some(node);
             }
             self.tail = Some(node);
+            self.len += 1;
         }
     }
     fn detach_node(&mut self, node:NonNull<Node<T>>) {
@@ -144,7 +143,8 @@ impl <T> LinkedList <T> {
                     self.head = None;
                     self.tail = None;
                 }
-            }
+            };
+            self.len -= 1;
         }
     }
     fn push_back(&mut self, key:usize, val:T) -> NonNull<Node<T>> {
