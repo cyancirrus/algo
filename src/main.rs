@@ -22,7 +22,27 @@ fn single_number(nums:&[i32]) -> i32 {
 }
 
 
+fn nnumber(k:u8, nums:&[i32]) -> i32 {
+    let mut result = 0;
+    for bit in 0..32 {
+        let mut count = 0;
+        for &x in nums {
+            if (x >> bit) & 1 == 1 {
+                count += 1;
+            }
+        }
+        if count % k != 0 {
+            result |= 1 << bit;
+        }
+    }
+    result
+}
+
+
 
 fn main() {
     println!("test {:?}", single_number(&[1,1,3,2,3,2,9,3,1]));
+    let nums = vec![2, 2, 2, 2, 3, 3, 3, 3, 39, 5, 5,4, 5, 5, 4, 4, 4];
+    assert_eq!(nnumber(4, &nums), 39);
+
 }
