@@ -1,47 +1,46 @@
-// fn count_and_say(nums:&str) -> String {
-//     let len = nums.len();
-//     let chars: Vec<char> = nums.chars().collect();
-//     let mut compress = String::new();
-//     let mut count= 1;
-//     if len == 0 { return compress }
-
-//     for i in 1..len {
-//         if chars[i] == chars[i-1] {
-//             count +=1
-//         } else {
-//             compress.push_str(&count.to_string());
-//             compress.push(chars[i-1]);
-//             count = 1;
-//         }
-//     }
-//     compress.push_str(&count.to_string());
-//     compress.push(chars[len - 1]);
-//     compress
-// }
-
-fn count_and_say(nums:&str) -> String {
-    let mut chars = nums.chars();
-    let mut compress = String::new();
-    if let Some(mut prev) = chars.next() {
-        let mut count = 1;
-        for c in chars {
-            if c == prev {
-                count += 1;
-            } else {
-                compress.push_str(&count.to_string());
-                compress.push(prev);
-                prev = c;
-                count = 1;
+//🔹 1. Numerical Stability & Floating Point
+    // IEEE-754, error propagation, Kahan summation
+    // Matrix condition numbers, stability of ops like QR/SVD
+    // When to use fixed-point or arbitrary precision
+    // Why it matters: You’re building tools that manipulate math. Understanding rounding error and representational quirks separates black-box ML from real tool-building.
+// 🔹 4. Compilers / DSLs / Codegen
+// 🔹 5. Control Theory & Signal Processing
+use std::mem;
+fn count_and_say(n:u8) -> Vec<u8> {
+    
+    let mut result = vec![1];
+    let mut repr = vec![];
+    for _ in 0..n-1 {
+        let n = result.len();
+        let mut prev = result[0];
+        let mut counter = 1;
+        for idx in 1..n  {
+            if result[idx] == prev {
+                counter += 1;
+            }
+            else {
+                repr.push(counter);
+                repr.push(prev);
+                counter = 1;
+                prev = result[idx];
             }
         }
-        compress.push_str(&count.to_string());
-        compress.push(prev);
+        repr.push(counter);
+        repr.push(prev);
+        mem::swap(&mut result, &mut repr);
+        repr.clear();
     }
-    compress
+    result
 }
 
+// 1
+// 11
+// 21
+// 1211 
+// 111221
+// 312211
 
 fn main() {
-    assert_eq!("1234", count_and_say("2444"));
-    assert_eq!("331221", count_and_say("333211"));
+    println!("count and say {:?}", count_and_say(3));
+    // 11 12 21
 }

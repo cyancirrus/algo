@@ -5,230 +5,42 @@
     // Why it matters: You’re building tools that manipulate math. Understanding rounding error and representational quirks separates black-box ML from real tool-building.
 // 🔹 4. Compilers / DSLs / Codegen
 // 🔹 5. Control Theory & Signal Processing
-use std::ptr::NonNull;
-use std::collections::HashMap;
-use std::marker::PhantomData;
-use std::fmt::Debug;
-
-type Link <T> = Option<NonNull<Node<T>>>;
-
-struct Node <T> {
-    key:usize,
-    val:T, 
-    prev:Link<T>,
-    next:Link<T>,
+use std::mem;
+fn count_and_say(n:u8) -> Vec<u8> {
+    
+    let mut result = vec![1];
+    let mut repr = vec![];
+    for _ in 0..n-1 {
+        let n = result.len();
+        let mut prev = result[0];
+        let mut counter = 1;
+        for idx in 1..n  {
+            if result[idx] == prev {
+                counter += 1;
+            }
+            else {
+                repr.push(counter);
+                repr.push(prev);
+                counter = 1;
+                prev = result[idx];
+            }
+        }
+        repr.push(counter);
+        repr.push(prev);
+        mem::swap(&mut result, &mut repr);
+        repr.clear();
+    }
+    result
 }
 
-#[derive(Debug)]
-struct LinkedList <T> {
-    len: usize,
-    head: Link<T>,
-    tail: Link<T>,
-    _ghost: PhantomData<T>,
-}
-
-pub struct LruCache <T> {
-    capacity:usize,
-    entries: LinkedList<T>,
-    position: HashMap<usize, NonNull<Node<T>>>,
-    _ghost: PhantomData<T>,
-}
-
-impl <T> LruCache <T>
-{
-    pub fn new(capacity:usize) -> Self {
-        Self {
-            capacity,
-            entries: LinkedList::new(),
-            position: HashMap::new(),
-            _ghost: PhantomData,
-        }
-    }
-    pub fn get(&mut self, key:usize) -> Option<&T> {
-        unsafe {
-            let node = self.position.get(&key)?;
-            self.entries.detach_node(*node);
-            self.entries.push_back_node(*node);
-            Some(&(*node.as_ptr()).val)
-        }
-    }
-    pub fn update(&mut self, key:usize, val:T) {
-        unsafe {
-            if let Some(node) = self.position.get(&key) {
-                self.entries.detach_node(*node);
-                (*node.as_ptr()).val = val;
-                self.entries.push_back_node(*node);
-            } else {
-                if self.entries.len >= self.capacity {
-                    if let Some(node) = self.entries.pop_front() {
-                        self.position.remove(&node.key);
-                    }
-                }
-                self.position.insert(
-                    key, 
-                    self.entries.push_back(key, val)
-                );
-
-            }
-        }
-    }
-    pub fn remove(&mut self, key:usize) {
-        unsafe {
-            if let Some(node) = self.position.remove(&key) {
-                self.entries.detach_node(node);
-                drop(
-                    Box::from_raw(node.as_ptr())
-                )
-            }
-        }
-    }
-}
-
-impl <T> LinkedList <T> {
-    fn new() -> Self {
-        Self {
-            len: 0, 
-            head:None,
-            tail:None,
-            _ghost: PhantomData,
-        }
-    }
-    fn len(&self) -> usize {
-        self.len
-    }
-    fn push_front(&mut self, key:usize, val:T) -> NonNull<Node<T>> {
-        unsafe {
-            let new = NonNull::new_unchecked(Box::into_raw(Box::new(Node {
-                key,
-                val,
-                prev:None,
-                next:None,
-            })));
-            if let Some(old) = self.head {
-                (*new.as_ptr()).next = Some(old);
-                (*old.as_ptr()).prev = Some(new);
-            } else {
-                self.tail = Some(new);
-            }
-            self.head = Some(new);
-            self.len += 1;
-            new
-        }
-    }
-    fn push_back_node(&mut self, node:NonNull<Node<T>>) {
-        unsafe {
-            if let Some(old) = self.tail {
-                (*old.as_ptr()).next = Some(node);
-                (*node.as_ptr()).prev = Some(old);
-            } else {
-                self.head = Some(node);
-            }
-            self.tail = Some(node);
-            self.len += 1;
-        }
-    }
-    fn detach_node(&mut self, node:NonNull<Node<T>>) {
-        unsafe {
-            let pnode = (*node.as_ptr()).prev;
-            let nnode = (*node.as_ptr()).next;
-            match (pnode, nnode) {
-                (Some(prev), Some(next)) => {
-                    (*prev.as_ptr()).next = Some(next);
-                    (*next.as_ptr()).prev = Some(prev);
-                },
-                (Some(prev), None) => {
-                    (*prev.as_ptr()).next = None;
-                    self.tail = Some(prev);
-                },
-                (None, Some(next)) => {
-                    (*next.as_ptr()).prev = None;
-                    self.head = Some(next);
-                }
-                (None, None) => {
-                    self.head = None;
-                    self.tail = None;
-                }
-            };
-            (*node.as_ptr()).next = None;
-            (*node.as_ptr()).prev = None;
-            self.len -= 1;
-        }
-    }
-    fn push_back(&mut self, key:usize, val:T) -> NonNull<Node<T>> {
-        unsafe {
-            let new = NonNull::new_unchecked(Box::into_raw(Box::new(Node {
-                key,
-                val,
-                prev:None,
-                next:None,
-            })));
-            if let Some(old) = self.tail {
-                (*old.as_ptr()).next = Some(new);
-                (*new.as_ptr()).prev = Some(old);
-            } else {
-                self.head = Some(new);
-            }
-            self.tail = Some(new);
-            self.len += 1;
-            new
-        }
-    }
-    fn pop_front(&mut self) -> Option<Node<T>> {
-        unsafe {
-            let node = self.head.take()?;
-            let bnode = Box::from_raw(node.as_ptr());
-            self.head = bnode.next;
-            if let Some(new) = bnode.next {
-                (*new.as_ptr()).prev = None;
-            } else {
-                self.tail = None;
-            }
-            self.len -= 1;
-            Some(*bnode)
-        }
-    }
-    fn pop_back(&mut self) -> Option<Node<T>> {
-        unsafe {
-            let node = self.tail.take()?;
-            let bnode = Box::from_raw(node.as_ptr());
-            self.tail = bnode.prev;
-            if let Some(new) = bnode.prev {
-                (*new.as_ptr()).next = None;
-            } else {
-                self.head = None;
-            }
-            self.len -= 1;
-            Some(*bnode)
-        }
-    }
-}
-
-impl <T> Drop for LinkedList<T> {
-    fn drop(&mut self) {
-        while let Some(_) = self.pop_back() {
-        }
-    }
-}
-
+// 1
+// 11
+// 21
+// 1211 
+// 111221
+// 312211
 
 fn main() {
-    let mut cache = LruCache::new(3);
-    cache.update(1, "a");
-    cache.update(2, "b");
-    cache.update(3, "c");
-    assert_eq!(cache.get(1), Some(&"a"));
-    assert_eq!(cache.get(2), Some(&"b"));
-    assert_eq!(cache.get(3), Some(&"c"));
-    cache.update(2, "bb"); // Should move 2 to MRU
-    assert_eq!(cache.get(2), Some(&"bb"));
-    cache.get(2);
-    cache.remove(2);
-    assert_eq!(cache.get(2), None);
-    cache.update(4, "d");
-    assert_eq!(cache.get(4), Some(&"d"));
-    cache.update(5, "e"); // Should evict LRU (which is 1)
-    assert_eq!(cache.get(1000), None);         // none
-    assert_eq!(cache.get(1), None);         // evicted
-    assert_eq!(cache.get(3), Some(&"c"));   // still in
-    assert_eq!(cache.get(5), Some(&"e"));   // just added
+    println!("count and say {:?}", count_and_say(3));
+    // 11 12 21
 }
