@@ -45,11 +45,7 @@ impl <T> LruCache <T>
             _ghost: PhantomData,
         }
     }
-    fn get(&mut self, key:usize) -> Option<&T>
-        where T:Debug
-    {
-        println!("position appears as {:?}", self.position);
-        // println!("entries appears as {:?}", self.entries.head);
+    fn get(&mut self, key:usize) -> Option<&T> {
         unsafe {
             if let Some(node) = self.position.remove(&key) {
                 self.entries.detach_node(node);
@@ -61,22 +57,17 @@ impl <T> LruCache <T>
             }
         }
     }
-    fn update(&mut self, key:usize, val:T)
-        where T:Debug
-    {
+    fn update(&mut self, key:usize, val:T) {
         unsafe {
-            if let Some(node) = self.position.remove(&key) {
-                self.entries.detach_node(node);
+            if let Some(node) = self.position.get(&key) {
+                self.entries.detach_node(*node);
                 (*node.as_ptr()).next = None;
                 (*node.as_ptr()).prev = None;
                 (*node.as_ptr()).val = val;
-                self.entries.append_node(node);
-                self.position.insert(key, node);
+                self.entries.append_node(*node);
             } else {
                 if self.entries.len >= self.capacity {
-                    println!("hello world");
                     if let Some(node) = self.entries.pop_front() {
-                        println!("node popped {:?}", node.key);
                         self.position.remove(&node.key);
                     }
                 }
@@ -87,7 +78,6 @@ impl <T> LruCache <T>
 
             }
         }
-        println!("position appears as {:?}", self.position);
     }
     fn remove(&mut self, key:usize) {
         unsafe {
@@ -135,7 +125,6 @@ impl <T> LinkedList <T> {
     }
     fn append_node(&mut self, node:NonNull<Node<T>>) {
         unsafe {
-            println!("node key {:?}", (*node.as_ptr()).key);
             if let Some(old) = self.tail {
                 (*old.as_ptr()).next = Some(node);
                 (*node.as_ptr()).prev = Some(old);
@@ -156,7 +145,7 @@ impl <T> LinkedList <T> {
                 },
                 (Some(prev), None) => {
                     (*prev.as_ptr()).next = None;
-                    self.tail = None;
+                    self.tail = Some(prev);
                 },
                 (None, Some(next)) => {
                     (*next.as_ptr()).prev = None;
@@ -167,6 +156,8 @@ impl <T> LinkedList <T> {
                     self.tail = None;
                 }
             }
+            // (*node.as_ptr()).prev = None;
+            // (*node.as_ptr()).next = None;
         }
     }
     fn push_back(&mut self, key:usize, val:T) -> NonNull<Node<T>> {
@@ -242,14 +233,13 @@ fn main() {
     assert_eq!(cache.get(3), Some(&"c"));
     cache.update(2, "bb"); // Should move 2 to MRU
     assert_eq!(cache.get(2), Some(&"bb"));
+    cache.get(2);
     cache.remove(2);
     assert_eq!(cache.get(2), None);
-    println!("---------");
     cache.update(4, "d");
     assert_eq!(cache.get(4), Some(&"d"));
-    println!("-----------");
     cache.update(5, "e"); // Should evict LRU (which is 1)
     assert_eq!(cache.get(1), None);         // evicted
-    // assert_eq!(cache.get(3), Some(&"c"));   // still in
-    // assert_eq!(cache.get(5), Some(&"e"));   // just added
+    assert_eq!(cache.get(3), Some(&"c"));   // still in
+    assert_eq!(cache.get(5), Some(&"e"));   // just added
 }
