@@ -19,33 +19,63 @@ fn len_post_math(s:&str, t:usize) -> usize  {
     alpha.iter().fold(0, |x, y| x + y)
 }
 
-// fn len_post_math(s:&str, t:usize) -> usize  {
-//     let mut alpha = [0;26];
-//     let mut beta = [0;26];
-//     let mut result = 0;
-//     for c in s.as_bytes() {
-//         alpha[(c - b'a') as usize] += 1;
-//         beta[(c - b'a') as usize] += 1;
-//     }
-//     let loops = t / 26;
-//     let remain = t % 26;
-//     for (offset, cnt) in alpha.iter().enumerate() {
-//         if *cnt == 0 {
-//             continue;
-//         }
-//         result += ( loops + 1 )* cnt;
-//         if remain  > 25 - offset {
-//             result += cnt;
-//         }
-//         for loop_inc in 0..loops {
-//             // starts at b so equal to
-//             if remain + loop_inc >= ( 25 - offset - loop_inc ) % 26 {
-//                 result += (cnt - loop_inc) * (loops-loop_inc);
-//             }
-//         }
-//     }
-//     result
-// }
+// k(n - k/2) = t
+// k*n - k^2 /2 - t = 0
+// k^2/2 - k*n + t = 0
+// root (n ^2 - 4 * t / 2)
+// root (n ^2 - 2 * t )
+// sqrt(n * t)
+
+fn partial_loops(n:usize, t:usize) -> usize {
+    let mut k = t / n;
+    loop {
+        // n + n-1 + n-2 ...
+        // k * n - 1 + 2 + ...
+        // k*n - k * (k-1) / 2
+        let missing = k*(k - 1) / 2;
+        let real =  k * n  - missing;
+        if t > real + k {
+            k += missing / n;
+        } else if t + k < real  {
+            k += missing / n;
+        } else {
+            break
+        }
+    }
+    k
+}
+
+
+
+fn len_post_math(s:&str, t:usize) -> usize  {
+    let mut alpha = [0;26];
+    let mut beta = [0;26];
+    let mut result = 0;
+    for c in s.as_bytes() {
+        alpha[(c - b'a') as usize] += 1;
+        beta[(c - b'a') as usize] += 1;
+    }
+    let loops = t / 26;
+    let remain = t % 26;
+    // 26 + 25 + .../
+    let partial_loops = partial_loops(26, t);
+    for (offset, cnt) in alpha.iter().enumerate() {
+        if *cnt == 0 {
+            continue;
+        }
+        result += ( loops + 1 )* cnt;
+        if remain  > 25 - offset {
+            result += cnt;
+        }
+        for loop_inc in 0..partial_loops {
+            // starts at b so equal to
+            if remain + loop_inc >= ( 25 - offset - loop_inc ) % 26 {
+                result += (cnt - loop_inc) * (loops-loop_inc);
+            }
+        }
+    }
+    result
+}
 
 // fn len_post_math(s:&str, t:usize) -> usize  {
 //     let mut alpha = [0;26];
