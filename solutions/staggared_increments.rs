@@ -19,31 +19,37 @@ fn len_post_math(s:&str, t:usize) -> usize  {
     alpha.iter().fold(0, |x, y| x + y)
 }
 
-// k(n - k/2) = t
-// k*n - k^2 /2 - t = 0
-// k^2/2 - k*n + t = 0
-// root (n ^2 - 4 * t / 2)
-// root (n ^2 - 2 * t )
-// sqrt(n * t)
 
 fn partial_loops(n:usize, t:usize) -> usize {
+    // Estimation
+    // k(n - k/2) = t
+    // k*n - k^2 /2 - t = 0
+    // k^2/2 - k*n + t = 0
+    // root (n ^2 - 4 * t / 2)
+    // root (n ^2 - 2 * t )
+    // sqrt(n * t)
     let mut k = (n * n - 2 * t).isqrt();
     loop {
+        // Summation
         // n + n-1 + n-2 ...
         // k * n - 1 + 2 + ...
         // k*n - k * (k-1) / 2
         let missing = k*(k - 1) / 2;
         let real =  k * n  - missing;
-        if t > real + k {
-            k += 1.max(missing / n);
-        } else if t + k < real  {
-            k -= 1.max(missing / n);
-        } else {
+        let error = t - real;
+        if real - n + k  < t && t < real + n - k {
             break
         }
+        // First order correction
+        // f(x + h) = f(x) + h * f'(x);
+        // df / dh = f'(x) * h;
+        // => h * derivative = error;
+        // => h = error/derivative
+        k +=  error / (n - k);
     }
     k
 }
+
 
 
 
