@@ -33,6 +33,16 @@ fn quick_scan(poly:&[f64], y:f64) -> f64 {
     }
 }
 
+fn numeric_diff<F:Fn(f64) -> f64>(f:F, x:f64) -> f64 {
+    let epsilon = 1e-2;
+    (f(x+epsilon) - f(x)) / epsilon
+}
+
+fn secant_diff<F:Fn(f64) -> f64>(f:F, x:f64) -> f64 {
+    let epsilon = 1e-2;
+    (f(x+epsilon) - f(x-epsilon)) / (epsilon + epsilon)
+}
+
 
 fn main() {
     // x^2 + x + 2 = 0;
