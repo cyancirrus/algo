@@ -27,7 +27,7 @@ fn len_post_math(s:&str, t:usize) -> usize  {
 // sqrt(n * t)
 
 fn partial_loops(n:usize, t:usize) -> usize {
-    let mut k = t / n;
+    let mut k = (n * n - 2 * t).isqrt();
     loop {
         // n + n-1 + n-2 ...
         // k * n - 1 + 2 + ...
@@ -35,9 +35,9 @@ fn partial_loops(n:usize, t:usize) -> usize {
         let missing = k*(k - 1) / 2;
         let real =  k * n  - missing;
         if t > real + k {
-            k += missing / n;
+            k += 1.max(missing / n);
         } else if t + k < real  {
-            k += missing / n;
+            k -= 1.max(missing / n);
         } else {
             break
         }
