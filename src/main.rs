@@ -1,32 +1,51 @@
 use std::str::from_utf8;
+use std::mem;
 
 fn len_post_math(s:&str, t:usize) -> usize  {
     let mut alpha = [0;26];
-    let mut beta = [0;26];
-    let mut result = 0;
     for c in s.as_bytes() {
         alpha[(c - b'a') as usize] += 1;
-        beta[(c - b'a') as usize] += 1;
     }
-    let loops = t / 26;
-    let remain = t % 26;
-    for (offset, cnt) in alpha.iter().enumerate() {
-        if *cnt == 0 {
-            continue;
-        }
-        result += ( loops + 1 )* cnt;
-        if remain  > 25 - offset {
-            result += cnt;
-        }
-        for loop_inc in 0..loops {
-            // starts at b so equal to
-            if remain + loop_inc >= ( 25 - offset - loop_inc ) % 26 {
-                result += (cnt - loop_inc) * (loops-loop_inc);
+    for _ in 0.. t {
+        let mut beta = [0;26];
+        for idx in 0..26 {
+            if idx == 25 {
+                beta[1] += alpha[idx];
             }
+            beta[(idx + 1)%26] += alpha[idx];
         }
+        mem::swap(&mut alpha, &mut beta);
     }
-    result
+    alpha.iter().fold(0, |x, y| x + y)
 }
+
+// fn len_post_math(s:&str, t:usize) -> usize  {
+//     let mut alpha = [0;26];
+//     let mut beta = [0;26];
+//     let mut result = 0;
+//     for c in s.as_bytes() {
+//         alpha[(c - b'a') as usize] += 1;
+//         beta[(c - b'a') as usize] += 1;
+//     }
+//     let loops = t / 26;
+//     let remain = t % 26;
+//     for (offset, cnt) in alpha.iter().enumerate() {
+//         if *cnt == 0 {
+//             continue;
+//         }
+//         result += ( loops + 1 )* cnt;
+//         if remain  > 25 - offset {
+//             result += cnt;
+//         }
+//         for loop_inc in 0..loops {
+//             // starts at b so equal to
+//             if remain + loop_inc >= ( 25 - offset - loop_inc ) % 26 {
+//                 result += (cnt - loop_inc) * (loops-loop_inc);
+//             }
+//         }
+//     }
+//     result
+// }
 
 // fn len_post_math(s:&str, t:usize) -> usize  {
 //     let mut alpha = [0;26];
@@ -93,8 +112,8 @@ fn main() {
     
     assert_eq!(8, len_post_math(&"zaz", 26));
     assert_eq!(8, len_post_trans(&"zaz", 26));
-    assert_eq!(13, len_post_trans(&"zaz", 51));
-    // assert_eq!(3, len_post_trans(&"za", 25));
+    assert_eq!(13, len_post_math(&"zaz", 51));
+    // // assert_eq!(3, len_post_trans(&"za", 25));
     // assert_eq!(3, len_post_trans(&"z", 26));
     // assert_eq!(2, len_post_trans(&"z", 1));
     // for t in 0..100 {
