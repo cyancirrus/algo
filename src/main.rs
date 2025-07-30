@@ -9,6 +9,45 @@
 use std::collections::HashMap;
 use std::mem;
 
+fn maxor_iter(nums:&[u32]) -> u8 {
+    let mut max:u32 = 0;
+    let mut sums:HashMap<u32, u8> = HashMap::new();
+    let mut curr:HashMap<u32, u8> = HashMap::new();
+
+    for n in nums {
+        curr.insert(*n, 1);
+        for (s,c) in &sums  {
+            max = max.max(s|n);
+            *curr.entry(s|n).or_insert(1)+=c;
+        }
+        sums.extend(curr.drain());
+    }
+    sums[&max]
+}
+
+// fn maxor_iter(nums:&[u32]) -> u8 {
+//     let mut max:u32 = 0;
+//     let mut sums:HashMap<u32, u8> = HashMap::new();
+//     let mut curr:HashMap<u32, u8> = HashMap::new();
+
+//     for n in nums {
+//         let mut curr = sums.clone();
+//         curr.insert(*n, 1);
+//         for (s,c) in &sums  {
+//             max = max.max(s|n);
+//             *curr.entry(s|n).or_default()+=c;
+//             // println!("curr[sn] {}", curr[&(s|n)]);
+//         }
+
+//         mem::swap(&mut sums, &mut curr);
+//     }
+//     println!("sums {:?}", sums);
+//     println!("max {:?}", max);
+//     sums[&max]
+// }
+
+
+
 // bitwise or can repeatedly combine
 fn maxor_subarray(nums:&[u32]) -> u8 {
     let mut memo = HashMap::new();
@@ -60,8 +99,10 @@ fn longest_subarray(nums:&[u32]) -> u8 {
 
 
 fn main() {
+    assert_eq!(2, maxor_iter(&[3,1]));
+    assert_eq!(6, maxor_iter(&[3,2,1,5]));
     // assert_eq!(6, maxor_subarray(&[3,2,1,5]));
-    assert_eq!(2, maxor_subarray(&[3,1]));
+    // assert_eq!(2, maxor_subarray(&[3,1]));
     // assert_eq!(2,longest_subarray(&[1,2,3,3,2,2]));
     // assert_eq!(2,longest_subarray(&[1,2,3,3,2,3]));
     // assert_eq!(3,longest_subarray(&[1,2,3,3,3,2,3]));

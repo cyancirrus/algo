@@ -6,43 +6,106 @@
 // 🔹 4. Compilers / DSLs / Codegen
 // 🔹 5. Control Theory & Signal Processing
 
+use std::collections::HashMap;
+use std::mem;
 
-fn single_number(nums:&[i32]) -> i32 {
-    let mut single = 0;
-    let mut double = 0;
-    
-    for &n in nums {
-        double |= n & single;
-        single ^= n;
-        let both = single & double;
-        single &= !both;
-        double &= !both;
+fn maxor_iter(nums:&[u32]) -> u8 {
+    let mut max:u32 = 0;
+    let mut sums:HashMap<u32, u8> = HashMap::new();
+    let mut curr:HashMap<u32, u8> = HashMap::new();
+
+    for n in nums {
+        curr.insert(*n, 1);
+        for (s,c) in &sums  {
+            max = max.max(s|n);
+            *curr.entry(s|n).or_insert(1)+=c;
+        }
+        sums.extend(curr.drain());
     }
-    single
+    sums[&max]
 }
 
+// fn maxor_iter(nums:&[u32]) -> u8 {
+//     let mut max:u32 = 0;
+//     let mut sums:HashMap<u32, u8> = HashMap::new();
+//     let mut curr:HashMap<u32, u8> = HashMap::new();
 
-fn nnumber(k:u8, nums:&[i32]) -> i32 {
-    let mut result = 0;
-    for bit in 0..32 {
-        let mut count = 0;
-        for &x in nums {
-            if (x >> bit) & 1 == 1 {
-                count += 1;
-            }
+//     for n in nums {
+//         let mut curr = sums.clone();
+//         curr.insert(*n, 1);
+//         for (s,c) in &sums  {
+//             max = max.max(s|n);
+//             *curr.entry(s|n).or_default()+=c;
+//             // println!("curr[sn] {}", curr[&(s|n)]);
+//         }
+
+//         mem::swap(&mut sums, &mut curr);
+//     }
+//     println!("sums {:?}", sums);
+//     println!("max {:?}", max);
+//     sums[&max]
+// }
+
+
+
+// bitwise or can repeatedly combine
+fn maxor_subarray(nums:&[u32]) -> u8 {
+    let mut memo = HashMap::new();
+    let max = nums.into_iter().fold(0, |x, y| x | y );
+
+    fn dfs(idx:usize, val:u32, nums:&[u32], max:u32, memo:&mut HashMap<(usize, u32), u8>) -> u8{
+        if idx == nums.len() {
+            return if val == max { 1 } else { 0 };
         }
-        if count % k != 0 {
-            result |= 1 << bit;
+        if let Some(&mem) = memo.get(&(idx, val)) {
+            return mem;
+        }
+        let total = {
+            dfs(idx+1, val | nums[idx], nums, max, memo)
+            + dfs(idx+1, val, nums, max, memo)
+        };
+        memo.insert((idx, val), total);
+        total
+
+    }
+    dfs(0, 0, nums, max, &mut memo)
+}
+
+// maximum and == max value
+// and is interesection
+// then essentially from the max value see the number of copies
+
+fn longest_subarray(nums:&[u32]) -> u8 {
+    let mut cnt = 0;
+    let mut max = u32::MIN;
+    let mut pcnt = 0;
+    for &n in nums {
+        if n > max {
+            max = n;
+            cnt = 1;
+            pcnt = 1;
+        } else if n == max {
+            cnt += 1;
+            if cnt > pcnt {
+                pcnt = cnt;
+            }
+        } else {
+            cnt = 0;
         }
     }
-    result
+    pcnt
 }
 
 
 
 fn main() {
-    println!("test {:?}", single_number(&[1,1,3,2,3,2,9,3,1]));
-    let nums = vec![2, 2, 2, 2, 3, 3, 3, 3, 39, 5, 5,4, 5, 5, 4, 4, 4];
-    assert_eq!(nnumber(4, &nums), 39);
-
+    assert_eq!(2, maxor_iter(&[3,1]));
+    assert_eq!(6, maxor_iter(&[3,2,1,5]));
+    // assert_eq!(6, maxor_subarray(&[3,2,1,5]));
+    // assert_eq!(2, maxor_subarray(&[3,1]));
+    // assert_eq!(2,longest_subarray(&[1,2,3,3,2,2]));
+    // assert_eq!(2,longest_subarray(&[1,2,3,3,2,3]));
+    // assert_eq!(3,longest_subarray(&[1,2,3,3,3,2,3]));
+    // assert_eq!(1,longest_subarray(&[1,2,3,4]));
+    // assert_eq!(2, longest_subarray(&[1, 5, 2, 5, 5]));
 }
