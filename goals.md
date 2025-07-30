@@ -25,3 +25,13 @@
     Weekly quiz: L1/L2/L3 times, async vs sync, Arc vs Rc, trait bounds, ownership, hashmap layout, etc.
     Spaced repetition / flashcards (optional but potent)
     10-min recap logs: “What I understood this week”
+
+//🔹 1. Numerical Stability & Floating Point
+    // IEEE-754, error propagation, Kahan summation
+    // Matrix condition numbers, stability of ops like QR/SVD
+    // When to use fixed-point or arbitrary precision
+    // Why it matters: You’re building tools that manipulate math. Understanding rounding error and representational quirks separates black-box ML from real tool-building.
+// 🔹 4. Compilers / DSLs / Codegen
+// 🔹 5. Control Theory & Signal Processing
+
+
