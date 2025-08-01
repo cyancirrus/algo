@@ -14,7 +14,6 @@ fn jump_canonical(nums:&[usize]) -> usize {
         if i == prev {
             jumps += 1;
             prev = reachable;
-
             if prev >= nums.len() - 1 {
                 break
             }

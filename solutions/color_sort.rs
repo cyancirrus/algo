@@ -1,5 +1,6 @@
 use std::str::from_utf8;
 use std::mem;
+use std::collections::HashMap;
 
 fn sort_colors(colors: &mut[usize]) -> &[usize]{
     let mut low = 0;
@@ -23,6 +24,34 @@ fn sort_colors(colors: &mut[usize]) -> &[usize]{
         }
     }
     colors
+}
+
+fn fig(n:usize) -> usize {
+    let mut memo = HashMap::new();
+    fn worker_fib(n:usize, memo:&mut HashMap<usize,usize>) -> usize {
+        if n == 1 || n == 0 {
+            return 1;
+        }
+        if let Some(memory) = memo.get(&n) {
+            *memory
+        } else {
+            let result  = worker_fib(n-1, memo) + worker_fib(n-2, memo);
+            memo.insert(n, result);
+            result
+        }
+    }
+    worker_fib(n, &mut memo)
+}
+
+fn fibinacci(n:usize) -> usize {
+    let mut low = 1;
+    let mut high = 1;
+    
+    for _ in 0..n {
+        low += high;
+        mem::swap(&mut low, &mut high);
+    }
+    high
 }
 
 // fn sort_colors(colors: &mut[usize]) -> &[usize]{
