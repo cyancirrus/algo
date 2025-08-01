@@ -1,99 +1,97 @@
-use std::str::from_utf8;
-use std::mem;
 use std::collections::HashMap;
+use std::hash::Hash;
+use std::str::from_utf8;
 
-fn sort_colors(colors: &mut[usize]) -> &[usize]{
-    let mut low = 0;
-    let mut idx = 0; 
-    let mut high = colors.len()-1;
-    while idx <= high {
-        match colors[idx] {
-            0 => {
-                colors.swap(low, idx);
-                low += 1;
-                idx += 1;
-            },
-            1 => {
-                idx += 1;
-            },
-            2 => {
-                colors.swap(idx, high);
-                high -= 1;
-            },
-            _ => { break }
-        }
-    }
-    colors
+#[derive(Debug)]
+struct TrieNode <'a, T> {
+    children: HashMap<T, TrieNode<'a, T>>,
+    word: Option<&'a [T]>,
 }
 
-fn fig(n:usize) -> usize {
-    let mut memo = HashMap::new();
-    fn worker_fib(n:usize, memo:&mut HashMap<usize,usize>) -> usize {
-        if n == 1 || n == 0 {
-            return 1;
-        }
-        if let Some(memory) = memo.get(&n) {
-            *memory
-        } else {
-            let result  = worker_fib(n-1, memo) + worker_fib(n-2, memo);
-            memo.insert(n, result);
-            result
+impl <'a, T> TrieNode <'a, T>
+where T: Eq + Hash + Copy,
+{
+    fn new() -> Self {
+        Self {
+            children: HashMap::new(),
+            word: None,
         }
     }
-    worker_fib(n, &mut memo)
-}
-
-fn fibinacci(n:usize) -> usize {
-    let mut low = 1;
-    let mut high = 1;
-    
-    for _ in 0..n {
-        low += high;
-        mem::swap(&mut low, &mut high);
+    fn insert(&mut self, word:&'a [T]) {
+        let mut node = self;
+        for &v in word {
+            node = node.children.entry(v).or_insert_with(TrieNode::new)
+        }
+        node.word = Some(word);
     }
-    high
+    fn build(words:Vec<&'a [T]>) -> Self {
+        let mut trie = Self::new();
+        for word in words {
+            trie.insert(word);
+        }
+        trie
+    }
 }
 
-// fn sort_colors(colors: &mut[usize]) -> &[usize]{
-//     let mut ones = 0;
-//     let mut twos = colors.len()-1;
-//     let mut idx = 0; 
-//     while idx < colors.len() {
-//         match colors[idx] {
-//             0 => {
-//                 if idx > ones {
-//                     colors.swap(ones, idx);
-//                     ones += 1;
-//                     continue;
-//                 }
-//             },
-//             1 => {
-//                 if idx < ones {
-//                     colors.swap(ones, idx);
-//                     ones -= 1; 
-//                     continue;
-//                 } else if idx > twos {
-//                     colors.swap(twos, idx);
-//                     twos += 1;
-//                     continue;
-//                 }
-//             },
-//             2 => {
-//                 if idx < twos {
-//                     colors.swap(idx, twos);
-//                     twos-=1;
-//                     continue
-//                 }
-//             },
-//             _ => { break }
-//         }
-//         idx += 1;
-//     }
-//     colors
-// }
+impl <'a> TrieNode<'a, u8>
+{
+    fn build_words(words:Vec<&'a str>) -> Self {
+        let mut trie = Self::new();
+        for word in words {
+            trie.insert(word.as_bytes());
+        }
+        trie
+    }
+}
+
+
+
+fn longest_prefix(strings:Vec<&str>) -> String {
+    let mut node = &TrieNode::build_words(strings);
+    let mut prefix = Vec::new();
+    while node.children.len() == 1 && node.word.is_none() {
+        let (&ch, child) = node.children.iter().next().unwrap();
+        prefix.push(ch);
+        node = child;
+    }
+    String::from_utf8(prefix).unwrap()
+}
+
+
+fn valid_parens(input:&str) -> bool {
+    let mut order = Vec::new();
+    let input = input.as_bytes();
+    for &c in input {
+        match (c, order.last()) {
+            (b'(', _) => order.push(b'('),
+            (b'[', _) => order.push(b'['),
+            (b'{', _) => order.push(b'{'),
+            (b')', Some(o)) => { if *o == b'(' { order.pop(); } else {return false }},
+            (b']', Some(o)) => { if *o == b'[' { order.pop(); } else {return false }},
+            (b'}', Some(o)) => { if *o == b'{' { order.pop(); } else {return false }},
+            (b')', _) => { return false; },
+            (b']', _) => { return false },
+            (b'}', _) => { return false },
+            (_, _) => {},
+        }
+    }
+    order.is_empty()
+}
+
+// ([)]
 
 fn main() {
-    assert_eq!(&vec![0,0,1,1,2,2,2], sort_colors(&mut [0,2,1,2,2,1,0]));
-    assert_eq!(&vec![0,1,2], sort_colors(&mut [2,0,1]));
-    assert_eq!(&vec![0,0,1,2], sort_colors(&mut [2,0,1,0]));
+    let v:&[char] = &vec!['a', 'b', 'c'];
+    let mut a = "hello world";
+    println!("longest_prefix {:?}", longest_prefix(vec!["hello", "help"]));
+    // assert_eq!(true, valid_parens("hello (world)"));
+    // assert_eq!(true, valid_parens("hello (w(o)rld)"));
+    // assert_eq!(false, valid_parens("hello w(o)rld)"));
+    // assert_eq!(true, valid_parens("hello world"));
+    // assert_eq!(true, valid_parens("()hello world"));
+    // assert_eq!(true, valid_parens("(hello world)"));
+    // assert_eq!(true, valid_parens("hello world()"));
+    // assert_eq!(true, valid_parens("[]{}[]"));
+    // assert_eq!(false, valid_parens("[([)]]"));
+    // assert_eq!(true, valid_parens("{[()]}"));
 }
