@@ -1,5 +1,3 @@
-
-
 fn find_the_duplicate(nums:&mut [usize]) -> usize {
     for i in 0..nums.len() {
         let j = nums[i];
