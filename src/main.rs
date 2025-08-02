@@ -64,7 +64,7 @@ fn mod_power(base:u64, modulus:u64, mut power:usize) -> u64 {
         }
         factor = (factor * factor) % modulus;
         power >>= 1;
-    
+    }    
     result
 }
 
