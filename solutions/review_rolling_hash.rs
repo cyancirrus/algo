@@ -7,11 +7,11 @@ const MOD:u64= 1_003;
 
 fn build_lps(pattern: &[u8]) -> Vec<usize> {
     // longest prefix suffix
-    let mut fallback = vec![0..pattern.len()];
+    let mut fallback = vec![0;pattern.len()];
     let mut len = 0;
     for idx in 1..pattern.len() {
-        while len > 0 && pattern[idx] != pattern[j] {
-            len = lps[len-1]
+        while len > 0 && pattern[idx] != pattern[len] {
+            len = fallback[len-1]
         }
         if pattern[idx] == pattern[len] {
             len += 1;

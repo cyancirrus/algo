@@ -142,4 +142,5 @@ fn kth_smallest_prime_factor(arr:&[usize], mut k:usize) -> (usize, usize) {
 
 
 fn main() {
+    println!("test {:?}",1!&2);
 }
