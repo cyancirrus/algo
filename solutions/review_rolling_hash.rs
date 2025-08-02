@@ -4,6 +4,47 @@ use std::str::from_utf8;
 const PRIME:u64= 135_123;
 const MOD:u64= 1_003;
 
+
+fn build_lps(pattern: &[u8]) -> Vec<usize> {
+    // longest prefix suffix
+    let mut fallback = vec![0..pattern.len()];
+    let mut len = 0;
+    for idx in 1..pattern.len() {
+        while len > 0 && pattern[idx] != pattern[j] {
+            len = lps[len-1]
+        }
+        if pattern[idx] == pattern[len] {
+            len += 1;
+            fallback[idx] = len;
+        }
+    }
+    fallback
+}
+
+fn first_occur(needle:&str, haystack:&str) -> i32 {
+    let needle = needle.as_bytes();
+    let len = needle.len();
+    let haystack = haystack.as_bytes();
+    let lps = build_lps(needle);
+    let mut i= 0; 
+    let mut j= 0; 
+    while j < needle.len() {
+        if haystack[j] == needle[i] {
+            i+=1;
+            j+=1;
+            if i == len {
+                return (j-i) as i32;
+            }
+        } else if i > 0 {
+            i = lps[i-1];
+        } else {
+            j+=1;
+        }
+    }
+    -1
+}
+
+
 fn rolling_hash(bytes:&[u8]) -> u64{
     // p^n [b1] + p^n-1 [b2] + ... p[bn]
     let mut hashed: u64 = 0;
@@ -23,7 +64,7 @@ fn mod_power(base:u64, modulus:u64, mut power:usize) -> u64 {
         }
         factor = (factor * factor) % modulus;
         power >>= 1;
-    }
+    
     result
 }
 
