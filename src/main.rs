@@ -1,8 +1,86 @@
 use std::collections::HashSet;
 use std::collections::HashMap;
+use std::collections::VecDeque;
 use std::mem;
 use std::fmt::Debug;
 use std::ops::Shr;
+
+
+fn merge_sort(elems: &mut[usize])
+{
+    if !elems.is_empty() {
+        sort(0, elems.len() - 1, elems);
+    }
+
+}
+
+fn sort(start:usize, end:usize, elems:&mut [usize]) {
+    if end <= start { 
+        return;
+    } else if end == start + 1 {
+        if elems[end] < elems[start] {
+            return elems.swap(start, end)
+        }
+    } else {
+        let mid = start + (end - start) / 2;
+        sort(start, mid, elems);
+        sort(mid + 1, end, elems);
+        merge(start, mid, end, elems)
+    }
+}
+
+
+fn merge(start:usize, mid:usize, end:usize, elems:&mut[usize]) {
+    let mut ridx = mid + 1;
+    let mut lsize = mid-start + 1;
+
+    for lidx in start..=end {
+        if ridx > end || lsize == 0 {
+            break;
+        }
+        if elems[ridx] < elems[lidx] {
+            for idx in (lidx..ridx).rev() {
+                elems.swap(idx, idx+1);
+            }
+            ridx += 1;
+        } else {
+            lsize -= 1;
+        }
+    }
+}
+
+
+fn insertion_sort<T>(elems:&mut Vec<T>)
+where T: PartialOrd
+{
+    for idx in 0..elems.len() {
+        let mut sidx = 0;
+        while elems[sidx] < elems[idx] && sidx <= idx {
+            sidx+=1;
+        }
+        // doubly linkedlist could remove the reported swap
+        for ridx in (sidx..idx).rev() {
+            elems.swap(ridx+1, ridx) ;
+        }
+    }
+}
+
+fn bubblesort<T>(elems:&mut Vec<T>)
+where T: PartialOrd
+{
+    let mut upper = elems.len();
+    let mut changed = true;
+    while changed {
+        changed = false;
+        for idx in 1..upper {
+            if elems[idx] < elems[idx-1] {
+                elems.swap(idx, idx-1);
+                changed = true;
+            }
+        }
+        upper-=1;
+    }
+}
 
 fn radix_sort_flat(elems: &mut Vec<usize>) 
 {
@@ -18,34 +96,34 @@ fn radix_sort_flat(elems: &mut Vec<usize>)
     let mut positions:Vec<usize> = vec![0;word];
     let mut least_zeros = u32::MAX;
 
-    for edx in 0..n {
-        least_zeros = least_zeros.min(elems[edx].leading_zeros());
-        positions[elems[edx] & (word - 1)] += 1;
+    for &e in elems.iter() {
+        least_zeros = least_zeros.min(e.leading_zeros());
+        positions[e & (word - 1)] += 1;
     }
     for pdx in 1..word {
         positions[pdx] += positions[pdx-1];
     }
-    for edx in 0..n {
-        let radix = elems[edx] & (word - 1);
+    for &e in elems.iter() {
+        let radix = e & (word - 1);
         positions[radix] -= 1;
-        curr[ positions[radix] ] = elems[edx];
+        curr[ positions[radix] ] = e;
     }
     mem::swap(&mut curr, elems);
-    // elements is nothing then we insert and then swap
     for _ in 0..(usize::BITS - least_zeros) / RADIX as u32 + 1 {
         bit_offset+=RADIX;
         positions.fill(0);
-        for pdx in 0..n {
-            let radix = ( elems[pdx] >> bit_offset - RADIX ) & ( word - 1 );
+        // for pdx in 0..n {
+        for &p in elems.iter() {
+            let radix = ( p >> bit_offset - RADIX ) & ( word - 1 );
             positions[radix] += 1;
         }
         for i in 1..word{
             positions[i] += positions[i-1]
         }
-        for edx in (0..n).rev() {
-            let radix = ( elems[edx] >> bit_offset - RADIX ) & ( word - 1 );
+        for &e in elems.iter().rev() {
+            let radix = ( e >> bit_offset - RADIX ) & ( word - 1 );
             positions[radix] -= 1;
-            curr[ positions[radix] ] = elems[edx];
+            curr[ positions[radix] ] = e;
         }
         mem::swap(&mut curr, elems);
     }
@@ -187,7 +265,26 @@ fn main() {
     // println!(" {:?}", quick_sort(&mut [2,2,1,3,10,4]));
     // println!(" {:?}", quick_sort(&mut [1,2,1,3,15,4, 20, 13,0 , 5, -1]));
     // println!(" {:?}", radix_sort(&mut [1,2,1,3,15,4, 20, 13,0, 5]));
-    let mut x = vec![1,2,1,3,15,4, 20, 13,0, 5];
-    radix_sort_flat(&mut x);
+    // let mut x = vec![1,2,1,3,15,4, 20, 13,0, 5];
+    // radix_sort_flat(&mut x);
+    // println!("{x:?}")
+    // let mut x = vec![1,2,1,3,15,4, 20, 13,0, 5];
+    // bubblesort(&mut x);
+    // println!("{x:?}")
+    // let mut x = vec![1,2,1,3,15,4, 20, 13,0, 5];
+    // insertion_sort(&mut x);
+    // println!("{x:?}")
+
+    // let mut x = [1, 3, 2,4];
+    // merge(0,2, &mut x);
+    // println!("what is this {x:?}");
+    
+    // let mut x = [1, 3, 5, 6, 2, 4, 4, 5];
+    // merge(0,4,&mut x);
+    // println!("what is this {x:?}");
+    
+    // let mut x = vec![1,2,1,3,15,4, 20, 13,0, 5, 0, 3];
+    let mut x = vec![1,2,1,3,15,4, 10, 13, 11, 2, 5];
+    merge_sort(&mut x);
     println!("{x:?}")
 }
