@@ -145,16 +145,30 @@ fn insertion_sort<T>(elems:&mut Vec<T>)
 where T: PartialOrd
 {
     for idx in 1..elems.len() {
-        let mut sidx = 0;
-        while elems[sidx] < elems[idx] && sidx <= idx {
-            sidx+=1;
-        }
-        // doubly linkedlist could remove the reported swap
-        for ridx in (sidx..idx).rev() {
-            elems.swap(ridx+1, ridx) ;
+        let mut sidx = idx;
+        while sidx > 0 && elems[sidx] < elems[sidx-1] {
+            elems.swap(sidx, sidx-1);
+            sidx-=1;
         }
     }
 }
+
+
+// fn insertion_sort<T>(elems:&mut Vec<T>)
+// where T: PartialOrd
+// {
+//     for idx in 1..elems.len() {
+//         let mut sidx = 0;
+//         while elems[sidx] < elems[idx] && sidx <= idx {
+//             sidx+=1;
+//         }
+//         // doubly linkedlist could remove the reported swap
+//         for ridx in (sidx..idx).rev() {
+//             elems.swap(ridx+1, ridx) ;
+//         }
+//     }
+// }
+
 
 fn bubblesort<T>(elems:&mut Vec<T>)
 where T: PartialOrd
