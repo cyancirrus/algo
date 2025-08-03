@@ -12,7 +12,7 @@ fn radix_sort_flat(elems: &mut Vec<usize>)
     const RADIX:usize = 4;
     let n = elems.len();
     let word = 1<<RADIX;
-    let mut bit_cursor = RADIX;
+    let mut bit_offset = RADIX;
 
     let mut curr:Vec<usize> = vec![0; n];
     let mut positions:Vec<usize> = vec![0;word];
@@ -20,13 +20,11 @@ fn radix_sort_flat(elems: &mut Vec<usize>)
 
     for edx in 0..n {
         least_zeros = least_zeros.min(elems[edx].leading_zeros());
-        // want the left bounds not right
         positions[elems[edx] & (word - 1)] += 1;
     }
     for pdx in 1..word {
         positions[pdx] += positions[pdx-1];
     }
-    println!("positions {positions:?}");
     for edx in 0..n {
         let radix = elems[edx] & (word - 1);
         positions[radix] -= 1;
@@ -35,17 +33,17 @@ fn radix_sort_flat(elems: &mut Vec<usize>)
     mem::swap(&mut curr, elems);
     // elements is nothing then we insert and then swap
     for _ in 0..(usize::BITS - least_zeros) / RADIX as u32 + 1 {
-        bit_cursor+=RADIX;
+        bit_offset+=RADIX;
         positions.fill(0);
         for pdx in 0..n {
-            let radix = ( elems[pdx] >> bit_cursor - RADIX ) & ( word - 1 );
+            let radix = ( elems[pdx] >> bit_offset - RADIX ) & ( word - 1 );
             positions[radix] += 1;
         }
         for i in 1..word{
             positions[i] += positions[i-1]
         }
         for edx in (0..n).rev() {
-            let radix = ( elems[edx] >> bit_cursor - RADIX ) & ( word - 1 );
+            let radix = ( elems[edx] >> bit_offset - RADIX ) & ( word - 1 );
             positions[radix] -= 1;
             curr[ positions[radix] ] = elems[edx];
         }
@@ -60,7 +58,7 @@ fn radix_sort_flat(elems: &mut Vec<usize>)
 //     const RADIX:usize = 4;
 //     let n = elems.len();
 //     let word = 1<<RADIX;
-//     let mut bit_cursor = RADIX;
+//     let mut bit_offset = RADIX;
 
 //     let mut curr:Vec<usize> = vec![0; n];
 //     let mut cursors:Vec<usize> = vec![0;word];
@@ -83,18 +81,18 @@ fn radix_sort_flat(elems: &mut Vec<usize>)
 //     mem::swap(&mut curr, elems);
 //     // elements is nothing then we insert and then swap
 //     for _ in 0..(usize::BITS - least_zeros) / RADIX as u32 + 1 {
-//         bit_cursor+=RADIX;
+//         bit_offset+=RADIX;
 //         cursors.fill(0);
 //         positions.fill(0);
 //         for pdx in 0..n {
-//             let radix = ( elems[pdx] >> bit_cursor - RADIX ) & ( word - 1 );
+//             let radix = ( elems[pdx] >> bit_offset - RADIX ) & ( word - 1 );
 //             positions[radix+1] += 1;
 //         }
 //         for i in 1..word{
 //             positions[i] += positions[i-1]
 //         }
 //         for edx in 0..n {
-//             let radix = ( elems[edx] >> bit_cursor - RADIX ) & ( word - 1 );
+//             let radix = ( elems[edx] >> bit_offset - RADIX ) & ( word - 1 );
 //             curr[ positions[radix] + cursors[radix] ] = elems[edx];
 //             cursors[radix] += 1;
 //         }
@@ -108,7 +106,7 @@ fn radix_sort(elems: &[usize]) -> Vec<usize>
         return vec![];
     }
     const RADIX:usize = 4;
-    let mut bit_cursor = RADIX;
+    let mut bit_offset = RADIX;
     let mut prev:Vec<Vec<usize>> = vec![vec![];1<<RADIX];
     let mut least_zeros = u32::MAX;
     for &e in elems {
@@ -119,11 +117,11 @@ fn radix_sort(elems: &[usize]) -> Vec<usize>
     }
     let mut curr:Vec<Vec<usize>> = vec![Vec::with_capacity(RADIX + elems.len()/RADIX);1<<RADIX];
     for _ in 0..(usize::BITS - least_zeros) / RADIX as u32 + 1 {
-        bit_cursor+=RADIX;
+        bit_offset+=RADIX;
         for digit_place in &prev {
             for e in digit_place {
                 curr[
-                    ((e >> (bit_cursor - RADIX ))
+                    ((e >> (bit_offset - RADIX ))
                     & ((1<< RADIX) - 1)) as usize
                 ].push(*e);
             }
