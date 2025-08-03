@@ -144,7 +144,7 @@ fn merge(start:usize, mid:usize, end:usize, elems:&mut[usize], buffer:&mut [usiz
 fn insertion_sort<T>(elems:&mut Vec<T>)
 where T: PartialOrd
 {
-    for idx in 0..elems.len() {
+    for idx in 1..elems.len() {
         let mut sidx = 0;
         while elems[sidx] < elems[idx] && sidx <= idx {
             sidx+=1;
@@ -362,9 +362,9 @@ fn main() {
     // let mut x = vec![1,2,1,3,15,4, 20, 13,0, 5];
     // bubblesort(&mut x);
     // println!("{x:?}")
-    // let mut x = vec![1,2,1,3,15,4, 20, 13,0, 5];
-    // insertion_sort(&mut x);
-    // println!("{x:?}")
+    let mut x = vec![1,2,1,3,15,4, 20, 13,0, 5];
+    insertion_sort(&mut x);
+    println!("{x:?}");
 
     // let mut x = [1, 3, 2,4];
     // merge(0,2, &mut x);
