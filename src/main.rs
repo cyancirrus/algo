@@ -1,395 +1,222 @@
-use std::collections::HashSet;
 use std::collections::HashMap;
-use std::collections::VecDeque;
-use std::mem;
-use std::fmt::Debug;
-use std::ops::Shr;
+use std::collections::HashSet;
+use std::str::from_utf8;
+// use std::str::String;
 
-fn merge_sort(elems: &mut[usize])
-{
-    if !elems.is_empty() {
-        let mut buffer = vec![0;elems.len()];
-        sort(0, elems.len() - 1, elems, &mut buffer);
-    }
-
+fn palindrome_partitioning(s:&str) -> Vec<Vec<&str>> {
+    let mut result = Vec::new();
+    backtrack(s, 0, &mut vec![], &mut result);
+    result
 }
 
-fn sort(start:usize, end:usize, elems:&mut [usize], buffer:&mut [usize]) {
-    if end <= start { 
+fn backtrack<'a>(
+    s:&'a str,
+    start:usize,
+    path:&mut Vec<&'a str>,
+    result:&mut Vec<Vec<&'a str>>
+) {
+    if start == s.len() {
+        result.push(path.clone());
         return;
-    } else if end == start + 1 {
-        if elems[end] < elems[start] {
-            return elems.swap(start, end)
+    }
+    for end in start+1..=s.len() {
+        if is_palindrome(s[start..end].as_bytes()) {
+            path.push(&s[start..end]);
+            backtrack( s, end, path, result);
+            path.pop();
         }
+    }
+}
+
+
+
+fn is_palindrome(s:&[u8]) -> bool {
+    let n = s.len();
+    for i in 0..n / 2 {
+        if s[i] != s[n-1-i] {
+            return false;
+        }
+    }
+    true
+}
+
+
+// fn palindrome_partitioning(s:&str) -> Vec<Vec<String>> {
+//     let s = s.as_bytes();
+//     let mut memo = vec![];
+//     let mut result = vec![];
+//     worker(s, &mut vec![], &mut vec![], &mut memo);
+//     for v in memo {
+//         let mut collection = vec![];
+//         for s in v {
+//             collection.push(String::from_utf8(s).unwrap()); 
+//         }
+//         result.push(collection);
+//     }
+//     println!("Results {:?}", result);
+//     result
+// }
+
+// fn worker(s:&[u8], curr:&mut Vec<u8>, prev:&mut Vec<Vec<u8>>, memo:&mut Vec<Vec<Vec<u8>>>) {
+//     let match_len = curr.len();
+//     if s.is_empty() && curr.is_empty() {
+//         memo.push(prev.to_vec());
+//         return;
+//     }
+//     if match_len <= s.len() {
+//         if is_palindrome(&curr) && match_len > 0 {
+//             let mut prev = prev.clone();
+//             prev.push(curr.to_vec());
+//             worker(
+//                 &s[1..],
+//                 &mut vec![], 
+//                 &mut prev,
+//                 memo
+//             );
+//         }
+//         let mut curr = curr.clone();
+//         curr.push(s[0]);
+//         worker(
+//             &s[match_len..], 
+//             &mut curr,
+//             prev,
+//             memo
+//         );
+//     }
+// }
+
+
+
+
+
+// gas: available
+// cost: cost to next station
+fn gas_stations(gas:&[i32], cost:&[i32]) -> i32 {
+    let mut tank = 0;
+    let mut curr = 0;
+    let mut sidx = 0;
+    for idx in 0..gas.len() {
+        let fill = gas[idx] - cost[idx];
+        tank += fill;
+        curr += fill;
+        if curr < 0 {
+            sidx = idx+1;
+            curr = 0;
+        }
+    }
+    if tank < 0 {
+        return -1
     } else {
-        let mid = start + (end - start) / 2;
-        sort(start, mid, elems, buffer);
-        sort(mid + 1, end, elems, buffer);
-        merge(start, mid, end, elems, buffer)
+        return sidx as i32
     }
 }
 
-fn merge(start:usize, mid:usize, end:usize, elems:&mut[usize], buffer:&mut [usize]) {
-    let (mut idx, mut l, mut r) = (0, start, mid+1);
-    while l <= mid && r <= end {
-        if elems[l] < elems[r] {
-            buffer[idx] = elems[l];
-            l+=1;
+fn first_missing_positive(nums:&mut [i32]) -> i32 {
+    let n = nums.len() as i32;
+    for idx in 0..n as usize {
+        if 0 < nums[idx] && nums[idx] <= n {
+            nums.swap(idx as usize, nums[idx] as usize);
+        }
+    }
+    for (idx, &n) in nums.iter().enumerate().skip(1) {
+        if idx as i32 != n {
+            return idx as i32;
+        }
+    }
+    return -1
+}
+
+fn coin_change(coins:&[usize], target:usize) -> usize {
+    let n = target + 1;
+    let mut sums = vec![0;n];
+    sums[0]=1;
+    for &c in coins {
+        if c > target {
+            continue;
+        }
+        for amount in 0..n {
+            if c + amount  <= target {
+                sums[c + amount] += sums[amount];
+            }
+        }
+    }
+    sums[target]
+}
+
+type Collection = HashMap<u32, Vec<Vec<u32>>>;
+fn merge(base:&mut Collection, aux:&mut Collection) {
+    for (k,mut v) in  aux.drain() {
+        if let Some(entry) = base.get_mut(&k) {
+            entry.extend(v);
         } else {
-            buffer[idx] = elems[r];
-            r+=1;
-        }
-        idx+=1;
-    }
-    while l <= mid {
-        buffer[idx] = elems[l];
-        l+=1;
-        idx+=1;
-    }
-    while r <= end {
-        buffer[idx] = elems[r];
-        r+=1;
-        idx+=1;
-    }
-    elems[start..=end].copy_from_slice(&buffer[..idx]);
-}
-
-// fn merge_sort(elems: &mut[usize])
-// {
-//     if !elems.is_empty() {
-//         sort(0, elems.len() - 1, elems);
-//     }
-
-// }
-
-// fn sort(start:usize, end:usize, elems:&mut [usize]) {
-//     if end <= start { 
-//         return;
-//     } else if end == start + 1 {
-//         if elems[end] < elems[start] {
-//             return elems.swap(start, end)
-//         }
-//     } else {
-//         let mid = start + (end - start) / 2;
-//         sort(start, mid, elems);
-//         sort(mid + 1, end, elems);
-//         merge(start, mid, end, elems)
-//     }
-// }
-
-// fn merge(start:usize, mid:usize, end:usize, elems:&mut[usize]) {
-//     let mut merged = Vec::with_capacity(end- start + 1);
-    
-//     let (mut l, mut r) = (start, mid+1);
-//     while l <= mid && r <= end {
-//         if elems[l] < elems[r] {
-//             merged.push(elems[l]);
-//             l+=1;
-//         } else {
-//             merged.push(elems[r]);
-//             r+=1;
-//         }
-//     }
-//     if l <= mid {
-//         merged.extend_from_slice(&elems[l..=mid]);
-//     } else {
-//         merged.extend_from_slice(&elems[r..=end]);
-//     }
-//     elems[start..=end].copy_from_slice(&merged);
-// }
-
-// fn merge_sort(elems: &mut[usize])
-// {
-//     if !elems.is_empty() {
-//         sort(0, elems.len() - 1, elems);
-//     }
-
-// }
-
-// fn sort(start:usize, end:usize, elems:&mut [usize]) {
-//     if end <= start { 
-//         return;
-//     } else if end == start + 1 {
-//         if elems[end] < elems[start] {
-//             return elems.swap(start, end)
-//         }
-//     } else {
-//         let mid = start + (end - start) / 2;
-//         sort(start, mid, elems);
-//         sort(mid + 1, end, elems);
-//         merge(start, mid, end, elems)
-//     }
-// }
-
-// fn merge(start:usize, mid:usize, end:usize, elems:&mut[usize]) {
-//     let mut ridx = mid + 1;
-//     let mut lsize = mid-start + 1;
-
-//     for lidx in start..=end {
-//         if ridx > end || lsize == 0 {
-//             break;
-//         }
-//         if elems[ridx] < elems[lidx] {
-//             for idx in (lidx..ridx).rev() {
-//                 elems.swap(idx, idx+1);
-//             }
-//             ridx += 1;
-//         } else {
-//             lsize -= 1;
-//         }
-//     }
-// }
-
-
-fn insertion_sort<T>(elems:&mut Vec<T>)
-where T: PartialOrd
-{
-    for idx in 1..elems.len() {
-        let mut sidx = idx;
-        while sidx > 0 && elems[sidx] < elems[sidx-1] {
-            elems.swap(sidx, sidx-1);
-            sidx-=1;
+            base.insert(k, v);
         }
     }
 }
 
 
-// fn insertion_sort<T>(elems:&mut Vec<T>)
-// where T: PartialOrd
-// {
-//     for idx in 1..elems.len() {
-//         let mut sidx = 0;
-//         while elems[sidx] < elems[idx] && sidx <= idx {
-//             sidx+=1;
-//         }
-//         // doubly linkedlist could remove the reported swap
-//         for ridx in (sidx..idx).rev() {
-//             elems.swap(ridx+1, ridx) ;
-//         }
-//     }
-// }
-
-
-fn bubblesort<T>(elems:&mut Vec<T>)
-where T: PartialOrd
-{
-    let mut upper = elems.len();
-    let mut changed = true;
-    while changed {
-        changed = false;
-        for idx in 1..upper {
-            if elems[idx] < elems[idx-1] {
-                elems.swap(idx, idx-1);
-                changed = true;
+fn candidates(nums: &[u32], target:u32) -> Vec<Vec<u32>> {
+    let mut memo:HashMap<u32,Vec<Vec<u32>>> = HashMap::new();
+    let mut seen:HashSet<u32> = HashSet::new();
+    for &n in nums {
+        if let Some(_) = seen.get(&n) {
+            continue;
+        }
+        seen.insert(n);
+        memo.entry(n).or_default().push(vec![n]);
+        let mut current: HashMap<u32,Vec<Vec<u32>>> = HashMap::new();
+        for (k, v) in &memo {
+            let mut components = v.clone();
+            if k + n <= target {
+                for v in &mut components {
+                    v.push(n);
+                }
+                current.entry(k+n).or_default().extend(components);
             }
         }
-        upper-=1;
+        merge(&mut memo, &mut current);
     }
+    memo.remove(&target).unwrap_or(vec![])
 }
 
-fn radix_sort_flat(elems: &mut Vec<usize>) 
-{
-    if elems.is_empty() {
-        return;
-    }
-    const RADIX:usize = 4;
-    let n = elems.len();
-    let word = 1<<RADIX;
-    let mut bit_offset = RADIX;
 
-    let mut curr:Vec<usize> = vec![0; n];
-    let mut positions:Vec<usize> = vec![0;word];
-    let mut least_zeros = u32::MAX;
-
-    for &e in elems.iter() {
-        least_zeros = least_zeros.min(e.leading_zeros());
-        positions[e & (word - 1)] += 1;
+// max multiplicity = 2
+fn remove_duplicates(nums:&mut [u32]) -> &[u32] {
+    if nums.is_empty() {
+        return nums
     }
-    for pdx in 1..word {
-        positions[pdx] += positions[pdx-1];
-    }
-    for &e in elems.iter() {
-        let radix = e & (word - 1);
-        positions[radix] -= 1;
-        curr[ positions[radix] ] = e;
-    }
-    mem::swap(&mut curr, elems);
-    for _ in 0..(usize::BITS - least_zeros) / RADIX as u32 + 1 {
-        bit_offset+=RADIX;
-        positions.fill(0);
-        // for pdx in 0..n {
-        for &p in elems.iter() {
-            let radix = ( p >> bit_offset - RADIX ) & ( word - 1 );
-            positions[radix] += 1;
-        }
-        for i in 1..word{
-            positions[i] += positions[i-1]
-        }
-        for &e in elems.iter().rev() {
-            let radix = ( e >> bit_offset - RADIX ) & ( word - 1 );
-            positions[radix] -= 1;
-            curr[ positions[radix] ] = e;
-        }
-        mem::swap(&mut curr, elems);
-    }
-}
-// fn radix_sort_flat(elems: &mut Vec<usize>) 
-// {
-//     if elems.is_empty() {
-//         return;
-//     }
-//     const RADIX:usize = 4;
-//     let n = elems.len();
-//     let word = 1<<RADIX;
-//     let mut bit_offset = RADIX;
-
-//     let mut curr:Vec<usize> = vec![0; n];
-//     let mut cursors:Vec<usize> = vec![0;word];
-//     let mut positions:Vec<usize> = vec![0;word+1];
-//     let mut least_zeros = u32::MAX;
-
-//     for edx in 0..n {
-//         least_zeros = least_zeros.min(elems[edx].leading_zeros());
-//         // want the left bounds not right
-//         positions[(elems[edx] & (word - 1)) + 1] += 1;
-//     }
-//     for pdx in 1..word {
-//         positions[pdx] += positions[pdx-1];
-//     }
-//     for edx in 0..n {
-//         let radix = elems[edx] & (word - 1);
-//         curr[ positions[radix] + cursors[radix] ] = elems[edx];
-//         cursors[radix] += 1;
-//     }
-//     mem::swap(&mut curr, elems);
-//     // elements is nothing then we insert and then swap
-//     for _ in 0..(usize::BITS - least_zeros) / RADIX as u32 + 1 {
-//         bit_offset+=RADIX;
-//         cursors.fill(0);
-//         positions.fill(0);
-//         for pdx in 0..n {
-//             let radix = ( elems[pdx] >> bit_offset - RADIX ) & ( word - 1 );
-//             positions[radix+1] += 1;
-//         }
-//         for i in 1..word{
-//             positions[i] += positions[i-1]
-//         }
-//         for edx in 0..n {
-//             let radix = ( elems[edx] >> bit_offset - RADIX ) & ( word - 1 );
-//             curr[ positions[radix] + cursors[radix] ] = elems[edx];
-//             cursors[radix] += 1;
-//         }
-//         mem::swap(&mut curr, elems);
-//     }
-// }
-
-fn radix_sort(elems: &[usize]) -> Vec<usize>
-{
-    if elems.is_empty() {
-        return vec![];
-    }
-    const RADIX:usize = 4;
-    let mut bit_offset = RADIX;
-    let mut prev:Vec<Vec<usize>> = vec![vec![];1<<RADIX];
-    let mut least_zeros = u32::MAX;
-    for &e in elems {
-        least_zeros = least_zeros.min(e.leading_zeros());
-        prev[
-            (e & ((1<<RADIX) - 1)) as usize
-        ].push(e);
-    }
-    let mut curr:Vec<Vec<usize>> = vec![Vec::with_capacity(RADIX + elems.len()/RADIX);1<<RADIX];
-    for _ in 0..(usize::BITS - least_zeros) / RADIX as u32 + 1 {
-        bit_offset+=RADIX;
-        for digit_place in &prev {
-            for e in digit_place {
-                curr[
-                    ((e >> (bit_offset - RADIX ))
-                    & ((1<< RADIX) - 1)) as usize
-                ].push(*e);
+    // index of thing
+    let mut pivot= 0;
+    let mut multiplicity = 1;
+    for idx in 1..nums.len() {
+        if nums[idx] == nums[pivot] {
+            if multiplicity == 1 {
+                multiplicity += 1;
+                pivot += 1;
+                nums.swap(pivot, idx);
             }
-        }
-        mem::swap(&mut prev, &mut curr);
-        for bucket in &mut curr {
-            bucket.clear();
-        }
-    }
-    prev.into_iter().flatten().collect()
-}
-
-
-fn quick_sort<T>(elems:&mut [T])
-where T: PartialOrd,
-{
-    if elems.is_empty() { return };
-    let mut stack = Vec::with_capacity(usize::BITS as usize - elems.len().max(1));
-    stack.push((0, elems.len()-1));
-    while let Some((low, high)) = stack.pop() {
-        if low < high {
-            let pivot = partition(low, high, elems);
-            if pivot > 0 {
-                stack.push((low, pivot - 1));
-            }
-            if pivot < high {
-                stack.push((pivot + 1, high));
-            }
+        } else {
+            pivot+=1;
+            nums.swap(pivot, idx);
+            multiplicity = 1;
         }
     }
-}
-
-fn partition<T>(low:usize, high:usize, elems:&mut [T]) -> usize
-where T: PartialOrd,
-{
-    let mut pidx= low;
-
-    for i in low..high {
-        // elems high is the partition idx
-        if elems[i] < elems[high]{
-            elems.swap(pidx, i);
-            pidx+=1;
-        }
-    }
-    elems.swap(pidx, high);
-    pidx
-}
-
-fn test() {
-    println!("testing");
-    let a = 0b10101110;
-    println!("first four bytes {:b}", a & ((1 << 4) - 1));
-    println!("second four bytes {:b}", (a >> 4) & ((1 << 4) - 1));
-
+    &nums[0..=pivot]
 }
 
 fn main() {
-    // test();
+    // println!("how does this go {:?}", remove_duplicates(&mut [1,1,1,2,2,3]));
+    // println!("how does this go {:?}", remove_duplicates(&mut [1,1,1,2,2,2,3]));
+    // println!("how does this go {:?}", remove_duplicates(&mut [1,1,1,1,1,1,1]));
+    // println!("how does this go {:?}", remove_duplicates(&mut [1,2,3,4]));
+    // println!("how does this go {:?}", remove_duplicates(&mut [1]));
+    // println!("how does this go {:?}", remove_duplicates(&mut []));
 
-    // println!(" {:?}", quick_sort(&mut [1,2,4,55,6]));
-    // println!(" {:?}", quick_sort(&mut [1,2,4,7,6, 31]));
-    // println!(" {:?}", quick_sort(&mut [1,2,3,4]));
-    // println!(" {:?}", quick_sort(&mut [2,2,1,3,10,4]));
-    // println!(" {:?}", quick_sort(&mut [1,2,1,3,15,4, 20, 13,0 , 5, -1]));
-    // println!(" {:?}", radix_sort(&mut [1,2,1,3,15,4, 20, 13,0, 5]));
-    // let mut x = vec![1,2,1,3,15,4, 20, 13,0, 5];
-    // radix_sort_flat(&mut x);
-    // println!("{x:?}")
-    // let mut x = vec![1,2,1,3,15,4, 20, 13,0, 5];
-    // bubblesort(&mut x);
-    // println!("{x:?}")
-    let mut x = vec![1,2,1,3,15,4, 20, 13,0, 5];
-    insertion_sort(&mut x);
-    println!("{x:?}");
-
-    // let mut x = [1, 3, 2,4];
-    // merge(0,2, &mut x);
-    // println!("what is this {x:?}");
-    
-    // let mut x = [1, 3, 5, 6, 2, 4, 4, 5];
-    // merge(0,4,&mut x);
-    // println!("what is this {x:?}");
-    
-    // let mut x = vec![1,2,1,3,15,4, 20, 13,0, 5, 0, 3];
-    let mut x = vec![1,2,1,3,15,4, 10, 13, 11, 2, 5];
-    merge_sort(&mut x);
-    println!("{x:?}")
+    // println!("candidates {:?}", candidates(&[2,5,2,1,2], 5));
+    // println!("candidates {:?}", candidates(&[2,5,2,1,2], 5));
+    // println!("coin change {:?}", coin_change(&[1,5,10], 32));
+    // println!("first missing {:?}", first_missing_positive(&mut [1,4,2,5,]));
+    // println!("gas {:?}", gas_stations(&[1,2,3,4,5], &[3,4,5,1,2]));
+    // println!("gas {:?}", gas_stations(&[2,3,4],&[3,4,3]));
+    println!("palindrome part {:?}", palindrome_partitioning("aab"));
 }
