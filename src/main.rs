@@ -1,3 +1,24 @@
+fn palindrome_three_partition(s:&str) -> bool {
+    let n = s.len();
+    let mut memo = vec![vec![false;n];n];
+    for i in 0..n {
+        for j in i..n {
+            // result for like one character memo[i][i] why i..=j
+            memo[i][j] = is_palindrome(s[i..=j].as_bytes());
+        }
+    }
+
+    for lower in 0..n-2 {
+        for mid in lower+1..n-1 {
+            if memo[0][lower] && memo[lower+1][mid] && memo[mid+1][n-1] {
+                return true
+            }
+        }
+    }
+    false
+}
+
+
 fn palindrome_partitioning(s:&str) -> bool {
     partitioning(s, 3)
 }
@@ -21,7 +42,6 @@ fn backtrack(
     if target > splits {
         let need = target - splits;
         if dp[start][need] {
-        println!("hello");
             return (true, start + need);
         }
     }
@@ -128,6 +148,7 @@ fn main() {
     // println!("partitioning {:?}", palindrome_partitioning("hello"));
     println!("partitioning {:?}", palindrome_partitioning("aacd"));
     println!("partitioning {:?}", palindrome_partitioning("abc"));
+    println!("partitioning {:?}", palindrome_three_partition("dabc"));
     // println!("partitioning {:?}", palindrome_partitioning("a"));
     // println!("partitioning {:?}", palindrome_partitioning("ab"));
     // println!("partitioning {:?}", palindrome_partitioning(""));
