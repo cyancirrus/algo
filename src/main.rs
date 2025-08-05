@@ -1,10 +1,11 @@
 fn palindrome_three_partition(s:&str) -> bool {
     let n = s.len();
+    let s_bytes = s.as_bytes();
     let mut memo = vec![vec![false;n];n];
     for i in 0..n {
         for j in i..n {
             // result for like one character memo[i][i] why i..=j
-            memo[i][j] = is_palindrome(s[i..=j].as_bytes());
+            memo[i][j] = is_palindrome_no_heap(s_bytes, i, j);
         }
     }
 
@@ -16,6 +17,16 @@ fn palindrome_three_partition(s:&str) -> bool {
         }
     }
     false
+}
+
+fn is_palindrome_no_heap(s:&[u8], i:usize, j:usize) -> bool {
+    let n = j - i + 1;
+    for idx in 0..n/2 {
+        if s[ idx + i ] != s[ j - idx ] {
+            return false
+        }
+    }
+    true
 }
 
 
