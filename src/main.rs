@@ -2,8 +2,8 @@
 use std::ptr::NonNull;
 use std::marker::PhantomData;
 
-#[derive(Debug)]
-enum Symbols {
+#[derive(Debug, Eq, PartialEq)]
+enum Tokens {
     Number(i32),
     Add,
     Sub,
@@ -13,16 +13,16 @@ enum Symbols {
     RParen,
 }
 
-impl Symbols {
-    fn link(glyph:u8) -> Option<Symbols> {
+impl Tokens {
+    fn link(glyph:u8) -> Option<Tokens> {
         match glyph {
-            b'+' => Some(Symbols::Add),
-            b'-' => Some(Symbols::Sub),
-            b'*' => Some(Symbols::Mult),
-            b'/' => Some(Symbols::Div),
-            b'(' => Some(Symbols::Lparen),
-            b')' => Some(Symbols::RParen),
-            b'0'..b'9' => Some(Symbols::Number(( glyph - b'0' ) as i32)),
+            b'+' => Some(Tokens::Add),
+            b'-' => Some(Tokens::Sub),
+            b'*' => Some(Tokens::Mult),
+            b'/' => Some(Tokens::Div),
+            b'(' => Some(Tokens::Lparen),
+            b')' => Some(Tokens::RParen),
+            b'0'..b'9' => Some(Tokens::Number(( glyph - b'0' ) as i32)),
             _ => None,
         }
     }
@@ -33,8 +33,8 @@ impl Symbols {
         for &s in stream  {
             let symbol= Self::link(s);
             match (symbol, previous.take()) {
-                (Some(Symbols::Number(c)), Some(Symbols::Number(p))) => {
-                    previous = Some(Symbols::Number(c  + p * 10));
+                (Some(Tokens::Number(c)), Some(Tokens::Number(p))) => {
+                    previous = Some(Tokens::Number(c  + p * 10));
                 },
                 (Some(s), Some(p)) => {
                     words.push(p);
@@ -57,6 +57,7 @@ impl Symbols {
     }
 }
 
+#[derive(Debug)]
 enum Operation {
     Add,
     Sub,
@@ -64,88 +65,155 @@ enum Operation {
     Mult,
 }
 
-impl Operation {
-    fn eval(&self, lhs:i8, rhs:i8) -> i8 {
-        match self {
-            Operation::Add => lhs + rhs,
-            Operation::Sub => lhs - rhs,
-            Operation::Div => lhs / rhs,
-            Operation::Mult => lhs * rhs,
-        }
+fn precidence(op: &Operation) -> u8 {
+    match op {
+        Operation::Add | Operation::Sub => 1,
+        Operation::Mult | Operation::Div => 2,
     }
 }
 
-type Link<T> = Option<NonNull<Node<T>>>;
-
+// type Link<T> = Option<NonNull<Node<T>>>;
+#[derive(Debug)]
 enum Expr {
     Number(i32),
     Binary {
         op:Operation,
-        lhs: Link<Expr>,
-        rhs: Link<Expr>,
+        lhs: Box<Expr>,
+        rhs: Box<Expr>,
     }
 }
 
-struct Node <T> {
-    elem:T,
-    left:Link<T>,
-    right:Link<T>,
+// fn match_operator(op:Option<&Tokens>) -> Option<Operation> {
+//     if let Some(o) = op{
+//         return match o {
+//             Tokens::Add => Some(Operation::Add),
+//             Tokens::Sub => Some(Operation::Sub),
+//             Tokens::Mult => Some(Operation::Mult),
+//             Tokens::Div => Some(Operation::Div),
+//             _ => panic!("unexpected token {o:?}"),
+//         }
+//     }
+//     None
+// }
+
+fn match_operator(op:&Tokens) -> Operation {
+    match op {
+        Tokens::Add => Operation::Add,
+        Tokens::Sub => Operation::Sub,
+        Tokens::Mult => Operation::Mult,
+        Tokens::Div => Operation::Div,
+        _ => panic!("unexpected token {op:?}"),
+    }
 }
 
-struct BinaryTree <T> {
-    len: usize,
-    head: Link<T>,
-    _ghost: PhantomData<T>,
-}
 
-
-impl <T> BinaryTree <T>
-where T: PartialOrd
-{
-    fn new() -> Self {
-        Self {
-            len:0,
-            head:None,
-            _ghost:PhantomData,
+fn parse_expr(tokens: &[Tokens], idx:&mut usize, min_prec:u8) -> Expr {
+    let mut lhs = match tokens[*idx] {
+        Tokens::Number(n) => {
+            *idx += 1;
+            Expr::Number(n)
+        },
+        Tokens::Lparen => {
+            *idx += 1;
+            println!("i think i get here");
+            let expr = parse_expr(tokens, idx, 0);
+            println!("i dont think i get here");
+            debug_assert_eq!(tokens[*idx],Tokens::RParen);
+            *idx += 1;
+            expr
+        },
+        _ => panic!("unexpected token"),
+    };
+    while let Some(op) = tokens.get(*idx) {
+        if *op == Tokens::RParen {
+            break;
+        }
+        let o = match_operator(op);
+        let prec = precidence(&o);
+        if prec < min_prec {
+            break;
+        }
+        *idx += 1;
+        let rhs = parse_expr(tokens, idx, prec + 1);
+        lhs = Expr::Binary {
+            op:o,
+            lhs:Box::new(lhs),
+            rhs:Box::new(rhs),
         }
     }
-    fn insert(&mut self, elem:T) {
-        let mut left = true;
-        unsafe {
-            let mut node = self.head;
-            while let Some(n) = node {
-                if (*n.as_ptr()).elem > elem {
-                    node = (*n.as_ptr()).left;
-                    left = true;
-                } else {
-                    node = (*n.as_ptr()).right;
-                    left = false;
-                }
-            }
-            let new = NonNull::new_unchecked(Box::into_raw(Box::new(
-                Node {
-                        elem,
-                        left: None,
-                        right: None,
-                }
-            )));
-            if let Some(n) = node {
-                match left {
-                    true => (*n.as_ptr()).left = Some(new),
-                    false => (*n.as_ptr()).right = Some(new),
-                }
-            }
+    lhs
+}
+
+// fn parse_expr(tokens: &[Tokens], idx:&mut usize, min_prec:u8) -> Expr {
+//     let mut lhs = match tokens[*idx] {
+//         Tokens::Number(n) => {
+//             *idx += 1;
+//             Expr::Number(n)
+//         },
+//         Tokens::Lparen => {
+//             *idx += 1;
+//             println!("i think i get here");
+//             let expr = parse_expr(tokens, idx, 0);
+//             println!("i dont think i get here");
+//             debug_assert_eq!(tokens[*idx],Tokens::RParen);
+//             *idx += 1;
+//             expr
+//         },
+//         _ => panic!("unexpected token"),
+//     };
+//     while let Some(op) = match_operator(tokens.get(*idx)) {
+//         let prec = precidence(&op);
+//         if prec < min_prec {
+//             break;
+//         }
+//         *idx += 1;
+//         let rhs = parse_expr(tokens, idx, prec + 1);
+//         lhs = Expr::Binary {
+//             op,
+//             lhs:Box::new(lhs),
+//             rhs:Box::new(rhs),
+//         }
+//     }
+//     lhs
+// }
+
+fn eval(expr:&Expr) -> i32 {
+    match expr {
+        Expr::Number(n) => *n,
+        Expr::Binary {op, lhs, rhs} => {
+            let l = eval(lhs);
+            let r = eval(rhs);
+            return identity(op, l, r);
+
         }
     }
 }
 
+fn identity(op:&Operation, lhs:i32, rhs:i32) -> i32 {
+    match op {
+        Operation::Add => lhs + rhs,
+        Operation::Sub => lhs - rhs,
+        Operation::Div => lhs / rhs,
+        Operation::Mult => lhs * rhs,
+    }
+}
 
+fn run(input:&str) -> i32 {
+    let mut tokens = Tokens::lex(input.as_bytes());
+    let ast = parse_expr(&mut tokens,&mut 0, 0);
+    println!("AST {:?}", ast);
+    eval(&ast)
+}
 
 fn main() {
-    let input = b"12 + 3 * (4 + 56)";
-    let tokens = Symbols::lex(input);
+    let input = b"12 + 3 * (4 + 5) + 4";
+    let tokens = Tokens::lex(input);
     for t in tokens {
         println!("{:?}", t);
     }
+
+    let input = "12 + 3 * (4 + 5) + 4";
+    // let input = "12 + 3 * 4 + 5 + 4";
+    println!("testing {:?}", run(input));
 
 }
