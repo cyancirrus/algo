@@ -13,48 +13,46 @@ enum Tokens {
     RParen,
 }
 
-impl Tokens {
-    fn link(glyph:u8) -> Option<Tokens> {
-        match glyph {
-            b'+' => Some(Tokens::Add),
-            b'-' => Some(Tokens::Sub),
-            b'*' => Some(Tokens::Mult),
-            b'/' => Some(Tokens::Div),
-            b'(' => Some(Tokens::Lparen),
-            b')' => Some(Tokens::RParen),
-            b'0'..b'9' => Some(Tokens::Number(( glyph - b'0' ) as i32)),
-            _ => None,
-        }
+fn link(glyph:u8) -> Option<Tokens> {
+    match glyph {
+        b'+' => Some(Tokens::Add),
+        b'-' => Some(Tokens::Sub),
+        b'*' => Some(Tokens::Mult),
+        b'/' => Some(Tokens::Div),
+        b'(' => Some(Tokens::Lparen),
+        b')' => Some(Tokens::RParen),
+        b'0'..b'9' => Some(Tokens::Number(( glyph - b'0' ) as i32)),
+        _ => None,
     }
-    fn lex(stream:&[u8]) -> Vec<Self> {
-        let mut words = vec![]; 
-        let mut previous:Option<Self> = None;
+}
+fn lex(stream:&[u8]) -> Vec<Tokens> {
+    let mut words = vec![]; 
+    let mut previous:Option<Tokens> = None;
 
-        for &s in stream  {
-            let symbol= Self::link(s);
-            match (symbol, previous.take()) {
-                (Some(Tokens::Number(c)), Some(Tokens::Number(p))) => {
-                    previous = Some(Tokens::Number(c  + p * 10));
-                },
-                (Some(s), Some(p)) => {
-                    words.push(p);
-                    previous = Some(s);
-                },
-                (Some(s), None) => {
-                    previous.take();
-                    previous = Some(s);
-                },
-                (None, Some(prev)) => {
-                    words.push(prev);
-                }
-                (None, None) => {}
+    for &s in stream  {
+        let symbol= link(s);
+        match (symbol, previous.take()) {
+            (Some(Tokens::Number(c)), Some(Tokens::Number(p))) => {
+                previous = Some(Tokens::Number(c  + p * 10));
+            },
+            (Some(s), Some(p)) => {
+                words.push(p);
+                previous = Some(s);
+            },
+            (Some(s), None) => {
+                previous.take();
+                previous = Some(s);
+            },
+            (None, Some(prev)) => {
+                words.push(prev);
             }
+            (None, None) => {}
         }
-        if let Some(last) = previous {
-            words.push(last);
-        }
-        words
     }
+    if let Some(last) = previous {
+        words.push(last);
+    }
+    words
 }
 
 #[derive(Debug)]
@@ -72,7 +70,6 @@ fn precidence(op: &Operation) -> u8 {
     }
 }
 
-// type Link<T> = Option<NonNull<Node<T>>>;
 #[derive(Debug)]
 enum Expr {
     Number(i32),
@@ -82,19 +79,6 @@ enum Expr {
         rhs: Box<Expr>,
     }
 }
-
-// fn match_operator(op:Option<&Tokens>) -> Option<Operation> {
-//     if let Some(o) = op{
-//         return match o {
-//             Tokens::Add => Some(Operation::Add),
-//             Tokens::Sub => Some(Operation::Sub),
-//             Tokens::Mult => Some(Operation::Mult),
-//             Tokens::Div => Some(Operation::Div),
-//             _ => panic!("unexpected token {o:?}"),
-//         }
-//     }
-//     None
-// }
 
 fn match_operator(op:&Tokens) -> Operation {
     match op {
@@ -144,39 +128,6 @@ fn parse_expr(tokens: &[Tokens], idx:&mut usize, min_prec:u8) -> Expr {
     lhs
 }
 
-// fn parse_expr(tokens: &[Tokens], idx:&mut usize, min_prec:u8) -> Expr {
-//     let mut lhs = match tokens[*idx] {
-//         Tokens::Number(n) => {
-//             *idx += 1;
-//             Expr::Number(n)
-//         },
-//         Tokens::Lparen => {
-//             *idx += 1;
-//             println!("i think i get here");
-//             let expr = parse_expr(tokens, idx, 0);
-//             println!("i dont think i get here");
-//             debug_assert_eq!(tokens[*idx],Tokens::RParen);
-//             *idx += 1;
-//             expr
-//         },
-//         _ => panic!("unexpected token"),
-//     };
-//     while let Some(op) = match_operator(tokens.get(*idx)) {
-//         let prec = precidence(&op);
-//         if prec < min_prec {
-//             break;
-//         }
-//         *idx += 1;
-//         let rhs = parse_expr(tokens, idx, prec + 1);
-//         lhs = Expr::Binary {
-//             op,
-//             lhs:Box::new(lhs),
-//             rhs:Box::new(rhs),
-//         }
-//     }
-//     lhs
-// }
-
 fn eval(expr:&Expr) -> i32 {
     match expr {
         Expr::Number(n) => *n,
@@ -199,7 +150,7 @@ fn identity(op:&Operation, lhs:i32, rhs:i32) -> i32 {
 }
 
 fn run(input:&str) -> i32 {
-    let mut tokens = Tokens::lex(input.as_bytes());
+    let mut tokens = lex(input.as_bytes());
     let ast = parse_expr(&mut tokens,&mut 0, 0);
     println!("AST {:?}", ast);
     eval(&ast)
@@ -207,7 +158,7 @@ fn run(input:&str) -> i32 {
 
 fn main() {
     let input = b"12 + 3 * (4 + 5) + 4";
-    let tokens = Tokens::lex(input);
+    let tokens = lex(input);
     for t in tokens {
         println!("{:?}", t);
     }
