@@ -1,7 +1,3 @@
-#![allow(dead_code)]
-use std::ptr::NonNull;
-use std::marker::PhantomData;
-
 #[derive(Debug, Eq, PartialEq)]
 enum Tokens {
     Number(i32),
@@ -99,9 +95,7 @@ fn parse_expr(tokens: &[Tokens], idx:&mut usize, min_prec:u8) -> Expr {
         },
         Tokens::Lparen => {
             *idx += 1;
-            println!("i think i get here");
             let expr = parse_expr(tokens, idx, 0);
-            println!("i dont think i get here");
             debug_assert_eq!(tokens[*idx],Tokens::RParen);
             *idx += 1;
             expr
@@ -152,7 +146,6 @@ fn identity(op:&Operation, lhs:i32, rhs:i32) -> i32 {
 fn run(input:&str) -> i32 {
     let mut tokens = lex(input.as_bytes());
     let ast = parse_expr(&mut tokens,&mut 0, 0);
-    println!("AST {:?}", ast);
     eval(&ast)
 }
 
