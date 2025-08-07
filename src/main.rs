@@ -1,3 +1,9 @@
+fn min_coins() {
+}
+
+fn longest_increasing_subsequence(nums:&[u32]) {
+}
+
 fn palindrome_min_edit(s:&str, k:usize) -> usize {
     let n = s.len();
     let s_bytes = s.as_bytes();
