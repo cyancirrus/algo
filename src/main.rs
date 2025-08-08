@@ -17,7 +17,7 @@ fn link(glyph:u8) -> Option<Tokens> {
         b'/' => Some(Tokens::Div),
         b'(' => Some(Tokens::Lparen),
         b')' => Some(Tokens::RParen),
-        b'0'..b'9' => Some(Tokens::Number(( glyph - b'0' ) as i32)),
+        b'0'..=b'9' => Some(Tokens::Number(( glyph - b'0' ) as i32)),
         _ => None,
     }
 }
@@ -129,7 +129,6 @@ fn eval(expr:&Expr) -> i32 {
             let l = eval(lhs);
             let r = eval(rhs);
             return identity(op, l, r);
-
         }
     }
 }
