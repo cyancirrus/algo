@@ -6,6 +6,7 @@ use std::collections::HashMap;
 use std::cmp::Reverse;
 use std::hash::Hash;
 
+
 trait Frontier<T> {
     fn push(&mut self, item:T);
     fn pop(&mut self) -> Option<T>;
@@ -201,4 +202,7 @@ where T: Hash + Eq + Copy + Ord
 
 
 fn main() {
+    let mut v = [3.0f32, 1.0, 2.0];
+    v.sort_by(|a, b| a.total_cmp(b));
+    println!("test {:?}", v);
 }
