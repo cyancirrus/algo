@@ -7,14 +7,11 @@ fn edit_distance(x:&str, y:&str) -> usize {
     for chj in y.chars() {
         curr[0] = 1 + prev[0];
         for (idx, chi) in x.chars().enumerate() {
-            if chi == chj {
-                curr[idx+1] = prev[idx];
-            } else {
-                curr[idx+1] = 1 + {
-                    curr[idx].min(
-                    prev[idx+1]).min(
-                    prev[idx])
-                }
+            curr[idx+1] = prev[idx];
+            curr[idx+1] = {(
+                curr[idx] + 1).min(
+                prev[idx+1] + 1).min(
+                prev[idx] + usize::from(chi != chj))
             }
         }
         mem::swap(&mut prev, &mut curr);
