@@ -4,8 +4,8 @@ fn edit_distance(x:&str, y:&str) -> usize {
     let m = x.len();
     let mut prev:Vec<usize> = (0..=m).collect();
     let mut curr:Vec<usize> = vec![0;m+1];
-    for chj in y.chars() {
-        curr[0] = 1 + prev[0];
+    for (idx, chj) in y.chars().enumerate() {
+        curr[0] = 1 + idx;
         for (idx, chi) in x.chars().enumerate() {
             curr[idx+1] = prev[idx];
             curr[idx+1] = {(
