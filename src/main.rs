@@ -1,111 +1,58 @@
-fn combunique_sum(candidates:&mut [usize], target:usize) -> Vec<Vec<usize>> {
-    let mut sols = vec![];
-    candidates.sort();
-    fn bt(start:usize, remain:usize, cands:&[usize], nums:&mut Vec<usize>, sols:&mut Vec<Vec<usize>>) {
-        if remain == 0 {
-            sols.push(nums.clone());
-            return
-        }
-        for i in start..cands.len() {
-            let c = cands[i];
-            if c == 0 || c > remain { break; }
-            nums.push(c);
-            bt(start+1, remain - c, cands, nums, sols);
-            nums.pop();
+fn subsets_uniq(elems: &mut [usize]) -> Vec<Vec<usize>> {
+    elems.sort_unstable();
+    let mut sols = Vec::with_capacity(1 << elems.len());
+
+    fn bt(start: usize, elems: &[usize], coll: &mut Vec<usize>, sols: &mut Vec<Vec<usize>>) {
+        sols.push(coll.clone());
+        for i in start..elems.len() {
+            if i > 0 && elems[i] == elems[i-1] { continue; }
+            coll.push(elems[i]);
+            bt(i+1, elems, coll, sols);
+            coll.pop();
         }
     }
-    bt(0, target, candidates, &mut vec![], &mut sols);
+
+    bt(0, elems, &mut vec![], &mut sols);
+    sols
+}
+
+
+fn subsets_two(elems: &mut [usize]) -> Vec<Vec<usize>> {
+    elems.sort_unstable();
+    let mut sols = Vec::with_capacity(1 << elems.len());
+
+    fn bt(start: usize, elems: &[usize], coll: &mut Vec<usize>, sols: &mut Vec<Vec<usize>>) {
+        sols.push(coll.clone());
+        for i in start..elems.len() {
+            coll.push(elems[i]);
+            bt(i+1, elems, coll, sols);
+            coll.pop();
+        }
+    }
+
+    bt(0, elems, &mut vec![], &mut sols);
     sols
 }
 
 
 
-fn combination_sum(candidates:&mut [usize], target:usize) -> Vec<Vec<usize>> {
-    let mut sols = vec![];
-    candidates.sort();
-    fn bt(start:usize, target:usize, cands: &[usize], nums:&mut Vec<usize>, sols: &mut Vec<Vec<usize>>) {
-        if target == 0 {
-            sols.push(nums.clone());
-            return;
-        }
-        for i in start..cands.len() {
-            let c = cands[i];
-            if c == 0 || c > target { break; }
-            nums.push(c);
-            bt(i, target - c, cands, nums, sols);
-            nums.pop();
+fn subsets(elems:&[usize]) -> Vec<Vec<usize>> {
+    let n = elems.len();
+    let mut sols = Vec::with_capacity(1<<n); 
+    fn bt(start:usize, elems:&[usize], coll:&mut Vec<usize>, sols:&mut Vec<Vec<usize>>) {
+        sols.push(coll.clone());
+        for i in start..elems.len() {
+            coll.push(elems[i]);
+            bt(i+1, elems, coll, sols);
+            coll.pop();
         }
     }
-    bt(0, target, candidates, &mut vec![], &mut sols);
+    bt(0, elems, &mut vec![], &mut sols);
     sols
 }
 
-
-
-
-// fn combination_sum(candidates:&[usize], target:usize) -> Vec<Vec<usize>> {
-//     let mut sols = vec![];
-//     bt(0, target, 0, candidates, &mut vec![], &mut sols);
-//     sols
-// }
-
-// fn bt(curr:usize, target:usize, order:usize, cands: &[usize], nums:&mut Vec<usize>, sols: &mut Vec<Vec<usize>>) {
-//     if curr == target {
-//         sols.push(nums.clone());
-//         return;
-//     }
-//     for &c in cands {
-//         if {
-//             c != 0
-//             && curr + c <= target
-//             && c >= order 
-//         }
-//         {
-//             nums.push(c);
-//             bt(curr + c, target, order.max(c), cands, nums, sols);
-//             nums.pop();
-//         }
-//     }
-// }
-
-
-// fn combination_sum(candidates:&[usize], target:usize) -> Vec<Vec<usize>> {
-//     let mut dp:Vec<Vec<Vec<usize>>> = vec![vec![]; target + 1 ];
-//     dp[0].push(vec![]); 
-//     for &c in candidates {
-//         if c == 0 { continue; }
-//         for sum in c..=target {
-//             let src = sum - c;
-//             let base_len = dp[src].len();
-//             dp[sum].reserve(base_len);
-//             for i in 0..base_len {
-//                 let mut comb = dp[src][i].clone();
-//                 comb.push(c);
-//                 dp[sum].push(comb);
-//             }
-//         }
-//     }
-//     dp[target].clone()
-// }
-
-
-// fn combination_sum(candidates:&[u8], target:u8) -> Vec<Vec<u8>> {
-//     let mut sums:Vec<Vec<Vec<u8>>> = vec![vec![]; target as usize +1 ];
-//     sums[0].push(vec![]); 
-//     for &n in candidates {
-//         for i in n..=target {
-//             let offset = (i - n) as usize;
-//             for mut v in sums[offset].clone() {
-//                 v.push(n);
-//                 sums[i as usize].push(v);
-//             }
-//         }
-//     }
-//     sums.pop().unwrap()
-// }
 
 fn main() {
-    // println!("generate parens {:?}", generate_parentheses(3));
-    println!("combination sum {:?}", combination_sum(&mut [2,3,6,7], 10));
-    println!("combination sum {:?}", combunique_sum(&mut [2,3,6,7], 11));
+    // println!("subsets {:?}", subsets(&[1,2,3]));
+    println!("subsets {:?}", subsets_uniq(&mut vec![1,1,1,1,2,3]));
 }
