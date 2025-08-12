@@ -1,7 +1,7 @@
 use std::collections::HashMap;
 use std::collections::VecDeque;
 
-fn rotate_sketch(mut list:Vec<usize>, n:usize) -> Vec<usize> {
+fn rotate_bisect(mut list:Vec<usize>, n:usize) -> Vec<usize> {
     let l1:Vec<usize> = list[0..n].to_vec();
     let mut l2:Vec<usize> = list[n..].to_vec();
     l2.extend(l1);
