@@ -39,15 +39,10 @@ impl fmt::Display for IpAddress {
     }
 }
 
-fn careful_step(run:u8, digit:u8) -> u8 {
-    let ones = digit - b'0';
-    if let Some(n) = (run % 100).checked_mul(10) {
-        if let Some(t) = n.checked_add(ones) {
-            return t
-        }
-    }
-    (run % 10) * 10 + ones
+fn careful_step(run:u16, digit:u8) -> u16 {
+    (run % 100) * 10 + (digit - b'0') as u16 
 }
+
 
 fn restore_ip_addresses(s:&str) -> Vec<IpAddress> {
     let sb = s.as_bytes();
@@ -57,34 +52,33 @@ fn restore_ip_addresses(s:&str) -> Vec<IpAddress> {
         vec![],
         vec![IpAddress::new()],
     ]);
-    let mut run:u8 = 0;
+    let mut run:u16 = 0;
     for c in sb.iter() {
         // NOTE: did not find an easy manip
         // running forward one number forward in base 10 and auto truncates due to u8
-        // run = run.wrapping_mul(10).wrapping_add(c - b'0');
         run = careful_step(run, *c);
         addresses.pop_front();
         addresses.push_back(vec![]);
-        if run / 100 > 0 {
+        if 100 <= run && run < 256 {
             // println!("-------------");
             for add in addresses[0].clone() {
                 let mut new = add;
-                if new.insert(run) {
+                if new.insert(run as u8) {
                     addresses[3].push(new);
                 }
             }
         }
-        if run % 100 / 10 > 0 {
+        if run % 100  >= 10 {
             for add in addresses[1].clone() {
                 let mut new = add;
-                if new.insert(run % 100) {
+                if new.insert((run % 100) as u8) {
                     addresses[3].push(new);
                 }
             }
         }
         for add in addresses[2].clone() {
             let mut new = add;
-            if new.insert(run % 10) {
+            if new.insert((run % 10) as u8) {
                 addresses[3].push(new);
             }
         }
