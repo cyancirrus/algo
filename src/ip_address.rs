@@ -2,6 +2,7 @@ use std::collections::VecDeque;
 use std::fmt;
 use std::mem;
 
+
 #[derive(Clone, Copy, Debug)]
 struct IpAddress {
     next:Option<usize>, 
