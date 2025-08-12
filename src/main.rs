@@ -1,6 +1,24 @@
 use std::collections::HashMap;
 use std::collections::VecDeque;
 
+fn rotate_sketch(mut list:Vec<usize>, n:usize) -> Vec<usize> {
+    let l1:Vec<usize> = list[0..n].to_vec();
+    let mut l2:Vec<usize> = list[n..].to_vec();
+    l2.extend(l1);
+    l2
+}
+
+fn reverse_lltwo(mut list:Vec<usize>, s:usize, e:usize) -> Vec<usize> {
+    let mut stack = Vec::with_capacity(e-s);
+    for i in s..e {
+        stack.push(list[i]);
+    }
+    for i in s..e {
+        list[i] = stack.pop().unwrap();
+    }
+    list
+}
+
 
 fn rotate_sketch(mut list:Vec<usize>, n:usize) -> Vec<usize> {
     let mut queue:VecDeque<usize> = VecDeque::with_capacity(n);
