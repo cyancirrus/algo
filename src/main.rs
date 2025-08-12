@@ -1,4 +1,54 @@
 use std::collections::HashMap;
+use std::collections::VecDeque;
+
+
+fn distinct_boolsubs(a:&str) -> usize {
+    let mut e0 = 0;
+    let mut e1 = 0;
+    let mut has_zero = 0;
+
+    for  &b in a.as_bytes() {
+        match b {
+            b'0' =>  {
+                e0 = e0 + e1;
+                has_zero = 1;
+            }
+            b'1' =>  {
+                e1 = e0 + e1 + 1;
+            },
+            _ => {},
+        }
+    }
+    e0 + e1 + has_zero
+}
+
+// fn distinct_boolsubs(a:&str) -> usize {
+//     let ab = a.as_bytes();
+//     let m = ab.len();
+//     let mut curr = VecDeque::from(vec![0;m+1]);
+
+//     for (idx, &b) in ab.iter().enumerate() {
+//         let bin = match b {
+//                 b'0' => 1,
+//                 b'1' => 10,
+//                 _ => 0,
+//         };
+//         curr[0] |= bin;
+//         for jdx in (1..=idx).rev() {
+//             curr[jdx] |= curr[jdx-1] & bin;
+//         }
+//     }
+//     let mut total = 0;
+//     let mut basis = 1;
+//     for repr in curr {
+//         basis *= (repr + 1) >> 1;
+//         if basis == 0 {
+//             return total 
+//         }
+//         total += basis
+//     }
+//     total
+// }
 
 fn distinct_subseqopt(a:&str, b:&str) -> usize {
     if b.is_empty() { return 0; }
