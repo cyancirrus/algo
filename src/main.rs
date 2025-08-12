@@ -1,46 +1,102 @@
-use std::collections::HashMap;
 use std::collections::VecDeque;
+use std::fmt;
+use std::mem;
 
-fn rotate_bisect(mut list:Vec<usize>, n:usize) -> Vec<usize> {
-    let l1:Vec<usize> = list[0..n].to_vec();
-    let mut l2:Vec<usize> = list[n..].to_vec();
-    l2.extend(l1);
-    l2
+#[derive(Clone, Copy, Debug)]
+struct IpAddress {
+    next:Option<usize>, 
+    vals:[u8;4],
 }
 
-fn reverse_lltwo(mut list:Vec<usize>, s:usize, e:usize) -> Vec<usize> {
-    let mut stack = Vec::with_capacity(e-s);
-    for i in s..e {
-        stack.push(list[i]);
+impl IpAddress {
+    fn new() -> Self {
+        Self {
+            next: Some(0),
+            vals: [0, 0, 0, 0],
+        }
     }
-    for i in s..e {
-        list[i] = stack.pop().unwrap();
+    fn insert(&mut self, val:u8) -> bool{
+        if let Some(pos) = self.next {
+            self.vals[pos] = val;
+            self.next = match pos {
+                0..3 => { Some(pos + 1) },
+                _ => { None }
+            };
+            return true;
+        }
+        false
     }
-    list
+    fn is_valid(&self) -> bool { self.next.is_none() }
 }
 
+impl fmt::Display for IpAddress {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(
+            f, "{}.{}.{}.{}",
+            self.vals[0], self.vals[1], self.vals[2], self.vals[3]
+        )
+    }
+}
 
-fn rotate_sketch(mut list:Vec<usize>, n:usize) -> Vec<usize> {
-    let mut queue:VecDeque<usize> = VecDeque::with_capacity(n);
-
-    for _ in 0..n {
-        if let Some(v) = list.pop() {
-            queue.push_front(v);
+fn careful_step(prev:u8, char:u8) -> u8 {
+    let ones = char - b'0';
+    if let Some(n) = (prev % 100).checked_mul(10) {
+        if let Some(t) = n.checked_add(ones) {
+            return t
         }
     }
-    let n = list.len();
-    for i in 0..n {
-        queue.push_back(list[i]);
-        if let Some(v) = queue.pop_front() {
-            list[i] = v;
+    (prev % 10) * 10 + ones
+}
+
+fn restore_ip_addresses(s:&str) -> Vec<IpAddress> {
+    let sb = s.as_bytes();
+    let mut addresses:VecDeque<Vec<IpAddress>> = VecDeque::from(vec![
+        vec![],
+        vec![],
+        vec![],
+        vec![IpAddress::new()],
+    ]);
+    let mut run:u8 = 0;
+    for c in sb.iter() {
+        // NOTE: did not find an easy manip
+        // running forward one number forward in base 10 and auto truncates due to u8
+        // run = run.wrapping_mul(10).wrapping_add(c - b'0');
+        run = careful_step(run, *c);
+        addresses.pop_front();
+        addresses.push_back(vec![]);
+        if run / 100 > 0 {
+            // println!("-------------");
+            for add in addresses[0].clone() {
+                let mut new = add;
+                if new.insert(run) {
+                    addresses[3].push(new);
+                }
+            }
+        }
+        if run % 100 / 10 > 0 {
+            for add in addresses[1].clone() {
+                let mut new = add;
+                if new.insert(run % 100) {
+                    addresses[3].push(new);
+                }
+            }
+        }
+        for add in addresses[2].clone() {
+            let mut new = add;
+            if new.insert(run % 10) {
+                addresses[3].push(new);
+            }
         }
     }
-    while let Some(v) = queue.pop_front() {
-        list.push(v);
+    {
+        addresses.pop_back().unwrap().into_iter()
+        .filter(|addr| addr.is_valid()).collect()
     }
-    list
 }
 
 fn main() {
-    println!("rotate_sketch {:?}", rotate_sketch(vec![1,2,3,4,5], 2));
+    let s = "25525511135";
+    // let s = "2551234";
+    // let s = "25555";
+    println!("Addresses {:?}", restore_ip_addresses(s));
 }
