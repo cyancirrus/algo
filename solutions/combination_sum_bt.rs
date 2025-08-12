@@ -1,22 +1,45 @@
-fn combination_sum(candidates:&[usize], target:usize) -> Vec<Vec<usize>> {
+fn combunique_sum(candidates:&mut [usize], target:usize) -> Vec<Vec<usize>> {
     let mut sols = vec![];
+    candidates.sort();
+    fn bt(start:usize, remain:usize, cands:&[usize], nums:&mut Vec<usize>, sols:&mut Vec<Vec<usize>>) {
+        if remain == 0 {
+            sols.push(nums.clone());
+            return
+        }
+        for i in start..cands.len() {
+            let c = cands[i];
+            if c == 0 || c > remain { break; }
+            nums.push(c);
+            bt(start+1, remain - c, cands, nums, sols);
+            nums.pop();
+        }
+    }
     bt(0, target, candidates, &mut vec![], &mut sols);
     sols
 }
 
-fn bt(start:usize, target:usize, cands: &[usize], nums:&mut Vec<usize>, sols: &mut Vec<Vec<usize>>) {
-    if target == 0 {
-        sols.push(nums.clone());
-        return;
+
+
+fn combination_sum(candidates:&mut [usize], target:usize) -> Vec<Vec<usize>> {
+    let mut sols = vec![];
+    candidates.sort();
+    fn bt(start:usize, target:usize, cands: &[usize], nums:&mut Vec<usize>, sols: &mut Vec<Vec<usize>>) {
+        if target == 0 {
+            sols.push(nums.clone());
+            return;
+        }
+        for i in start..cands.len() {
+            let c = cands[i];
+            if c == 0 || c > target { break; }
+            nums.push(c);
+            bt(i, target - c, cands, nums, sols);
+            nums.pop();
+        }
     }
-    for i in start..cands.len() {
-        let c = cands[i];
-        if c == 0 || c > target { break; }
-        nums.push(c);
-        bt(i, target - c, cands, nums, sols);
-        nums.pop();
-    }
+    bt(0, target, candidates, &mut vec![], &mut sols);
+    sols
 }
+
 
 
 
@@ -83,5 +106,6 @@ fn bt(start:usize, target:usize, cands: &[usize], nums:&mut Vec<usize>, sols: &m
 
 fn main() {
     // println!("generate parens {:?}", generate_parentheses(3));
-    println!("combination sum {:?}", combination_sum(&[2,3,6,7], 10));
+    println!("combination sum {:?}", combination_sum(&mut [2,3,6,7], 10));
+    println!("combination sum {:?}", combunique_sum(&mut [2,3,6,7], 11));
 }
