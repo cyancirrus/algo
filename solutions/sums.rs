@@ -18,8 +18,53 @@ use std::collections::HashMap;
 //     None
 // }
 
+fn three_sum_sort(nums:&mut [isize], target:isize) -> Vec<(isize, isize, isize)> {
+    // only need a solution not all solutions
+    nums.sort();
+    let n = nums.len();
+    let mut res = Vec::new();
+    for i in 0..n {
+        if i > 0 && nums[i] == nums[i-1] {
+            continue;
+        }
+        let (mut l, mut r) = (i + 1, n - 1);
+        while l < r {
+            let sum = nums[i] + nums[l] + nums[r];
+            if sum == target {
+                res.push((nums[i], nums[l], nums[r]));
+                while l < r && nums[l] == nums[l+1] { l+=1; }
+                while l < r && nums[r] == nums[r-1] { r-=1; }
+                l+=1;
+                r-=1;
+            } else if sum < target {
+                l += 1;
+            }
+            else {
+                r -= 1;
+            }
+        }
+    }
+    res
+}
+fn three_sum(nums:&[isize], target:isize) -> Option<(isize, isize, isize)> {
+    // O(n^2 + n) = O(n^2)
+    // only need a solution not all solutions
+    let n = nums.len();
+    let mut doubles:HashMap<isize, (isize, isize)> = HashMap::with_capacity(n  * (n - 1) );
+    for i in 0..n {
+        for j in i+1..n {
+            doubles.insert(nums[i] + nums[j], (nums[i], nums[j]));
+        }
+    }
+    for &z in nums {
+        if let Some(&(x,y)) = doubles.get(&(target - z)) {
+            return Some((x, y, z))
+        }
+    }
+    None
+}
 fn three_sum_space(target:i32, nums:&mut [i32]) -> Option<[i32;3]> {
-    // O(nlogn) << O(n^3)
+    // O(n^2logn) << O(n^3)
     nums.sort();
     let len = nums.len();
     for i in 0..len - 2{

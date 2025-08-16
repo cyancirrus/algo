@@ -88,3 +88,8 @@ async fn fizzbuzz(n: usize) {
 ```bash
 cloc . --exclude-dir=target
 ```
+
+update rust
+```bash
+rustup update
+```
