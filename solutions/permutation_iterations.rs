@@ -28,7 +28,7 @@ fn heap(n:usize, nums:&mut [u32], res: &mut Vec<Vec<u32>>) {
     }
     for i in 0..n {
         heap(n-1, nums, res);
-        if n & 1 == 1 {
+        if n & 1 == 0 {
             nums.swap(i, n - 1);
         } else {
             nums.swap(0, n-1)
