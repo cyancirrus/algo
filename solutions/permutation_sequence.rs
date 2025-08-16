@@ -1,21 +1,47 @@
-fn permutation_sequence(mut n:usize, mut k:usize) -> String {
+fn permutation_sequence(n:usize, mut k:usize) -> String {
     k-=1;
-    let mut nums:Vec<usize> = (1..=n).collect();
-    let mut result = String::new();
+    let mut nums:Vec<usize> = (1..n).collect();
     let mut fact = vec![1;n];
-    for i in 1..n {
+    let mut res = String::new();
+    for i in 1..=n {
         fact[i] = fact[i-1] * i;
     }
+
     for i in (1..=n).rev() {
         let block = fact[i-1];
         let idx = k / block;
         k %= block;
-        
-        let digit = nums.remove(idx);
-        result.push_str(&digit.to_string());
+        let digit = nums.remove(idx).to_string();
+        res.push_str( &digit);
     }
-    result
+
+    res
 }
+
+
+
+
+// fn permutation_sequence(mut n:usize, mut k:usize) -> String {
+//     let mut nums:Vec<usize> = (1..=n).collect();
+//     let mut cur = 0;
+//     while k > 0  {
+//         let idx = ( k + 1 ) / n;
+//         k = k.saturating_sub(idx * n);
+//         for i in (cur+1..=cur+idx).rev() {
+//             nums.swap(i, i - 1)
+//         }
+//         cur += 1;
+//         n -= 1;
+//         // onto next digit
+//     }
+//     println!("nums {nums:?}");
+//     nums.iter().map(|&digit| digit.to_string())
+//         .collect::<Vec<String>>().join("")
+// }
+
+
+
+
 
 
 
