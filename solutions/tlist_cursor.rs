@@ -36,8 +36,13 @@ where T: PartialOrd + Eq + PartialEq + Copy
 }
 
 trait BoundFunctions<T> {
-    fn min(&self, other:T) -> T;
-    fn max(&self, other:T) -> T;
+    fn min(&self, other:&T) -> T;
+    fn max(&self, other:&T) -> T;
+}
+
+impl <T: Ord + Copy> BoundFunctions<T> for T {
+    #[inline] fn min(&self, other:&T) -> T { if *self <= *other { *self } else { *other }}
+    #[inline] fn max(&self, other:&T) -> T { if *self >= *other { *self } else { *other }}
 }
 
 struct TreeCursor<T>
@@ -56,58 +61,52 @@ where T: PartialOrd + Eq + PartialEq + BoundFunctions<T> + Copy
             list:LinkedList::new(),
         }
     }
-    
-    fn insert(&mut self, range:(T, T))
-    where T: Copy
-    {
+    fn insert(&mut self, range:(T,T)) {
         unsafe {
             let (mut lower, mut upper) = range;
-            let node = &mut self.tree.get(lower);
-            if node.is_none() {
+            if self.list.head.is_none() {
                 let node = self.list.push_head(range);        
                 self.tree.insert(range.0, node);
             }
-            let mut l_node= node;
-            let mut r_node = &mut None;
-            let mut initialize = false;
-            while let Some(n) = l_node {
-                if !initialize {
-                    r_node = &mut (*n.as_ptr()).next;
-                    initialize = true;
-                }
-                if lower < (*n.as_ptr()).upper && (*n.as_ptr()).lower < upper {
-                    lower = lower.min((*n.as_ptr()).lower);
-                    self.list.detach(*n);
-                    self.tree.remove((*n.as_ptr()).lower);
-                    drop(Box::from_raw(n));
-                    l_node = &mut (*n.as_ptr()).prev;
-                } else if lower < (*n.as_ptr()).lower {
-                    l_node = &mut (*n.as_ptr()).prev ;
-                } else {
-                    break;
-                }
+
+            let mut start = self.tree.find_pred(lower).or(self.list.head);
+            if let Some(p) = start {
+                if (*p.as_ptr()).upper < lower { start = (*p.as_ptr()).next; }
             }
-            while let Some(n) = r_node {
-                if lower < (*n.as_ptr()).upper && (*n.as_ptr()).lower < upper {
-                    upper = upper.max((*n.as_ptr()).upper);
-                    self.list.detach(*n);
-                    self.tree.remove((*n.as_ptr()).lower);
-                    drop(Box::from_raw(n));
-                    continue;
-                } else if upper < (*n.as_ptr()).lower {
-                    r_node = &mut (*n.as_ptr()).next ;
-                } else {
-                    break;
-                }
+            let mut c_node = start.and_then(|p| (*p.as_ptr()).next);
+            let mut left_prev = None;
+            while let Some(ptr) = c_node {
+                let n = &*ptr.as_ptr();
+                if n.upper < lower { left_prev = Some(ptr); break; }
+                let prev = n.prev;
+                lower = lower.min(&n.lower);
+                upper = upper.min(&n.upper);
+                self.list.detach(ptr);
+                self.tree.remove_by_lower(n.lower);
+                drop(Box::from_raw(ptr.as_ptr()));
+                c_node = prev;
+            }
+            let mut right_next = None;
+            c_node = start;
+            while let Some(ptr) = c_node {
+                let n = &*ptr.as_ptr();
+                if n.lower > upper { right_next = Some(ptr); break; }
+                let next = n.next;
+                lower = lower.min(&n.lower);
+                upper = upper.max(&n.upper);
+                self.list.detach(ptr);
+                self.tree.remove_by_lower(n.lower);
+                drop(Box::from_raw(ptr.as_ptr()));
+                c_node = next;
             }
             let merged_node = NonNull::new_unchecked(Box::into_raw(Box::new(
                 Node {
                     lower,
                     upper,
-                    next:*r_node,
-                    prev:*l_node,
+                    next:left_prev,
+                    prev:right_next,
             })));
-            self.tree.insert(range.0, merged_node);
+            self.tree.insert(lower, merged_node);
         }
     }
 }
@@ -122,6 +121,28 @@ where T: PartialOrd + Eq + PartialEq  + Copy
             root:None,
         }
     }
+    fn find_pred(&self, bound:T) -> Option<NonNull<Node<T>>> {
+        unsafe {
+            let mut node = self.root;
+            let mut res = None;
+            while let Some(p) = node {
+                let r = p.as_ref();
+                if bound < r.bound {
+                    node = r.left;
+                } else {
+                    res = Some(r.point);
+                    node = r.right;
+                }
+            }
+            res
+        }
+    }
+    fn remove_by_lower(&mut self, bound:T) {
+        if let Some(range) = self.remove(bound) {
+            drop(range);
+        }
+    }
+
     fn get(&mut self, bound:T) -> Option<NonNull<Node<T>>> {
         unsafe {
             let mut node = &mut self.root;
@@ -141,11 +162,12 @@ where T: PartialOrd + Eq + PartialEq  + Copy
     {
         unsafe {
             let mut node = &mut self.root;
-            while let Some(n) = node {
-                if (*n.as_ptr()).bound < bound {
-                    node = &mut (*n.as_ptr()).left;
-                } else if (*n.as_ptr()).bound > bound {
-                    node = &mut (*n.as_ptr()).right;
+            while let Some(ptr) = node {
+                let r =  ptr.as_ref();
+                if bound < r.bound  {
+                    node = &mut (*ptr.as_ptr()).left;
+                } else if bound > r.bound {
+                    node = &mut (*ptr.as_ptr()).right;
                 } else {
                     return;
                 }
@@ -327,6 +349,28 @@ where T: Eq + PartialEq + PartialOrd + Copy
             (*node.as_ptr()).next = None;
             self.len -= 1;
             return node
+        }
+    }
+    fn insert_between(&mut self, prev: Link<T>, next: Link<T>, range:(T, T)) -> NonNull<Node<T>> {
+        unsafe {
+            let new = NonNull::new_unchecked(Box::into_raw(Box::new(
+                Node {
+                    lower:range.0,
+                    upper:range.1,
+                    prev:None,
+                    next:None
+                }
+            )));
+            match prev {
+                Some(p) => { (*p.as_ptr()).next = Some(new); (*new.as_ptr()).prev = Some(p); }
+                None    => { self.head = Some(new); }
+            }
+            match next {
+                Some(n) => { (*n.as_ptr()).prev = Some(new); (*new.as_ptr()).next = Some(n); }
+                None    => { self.tail = Some(new); }
+            }
+            self.len += 1;
+            new
         }
     }
 }
