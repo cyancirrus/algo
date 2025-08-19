@@ -34,8 +34,6 @@ fn subsets_two(elems: &mut [usize]) -> Vec<Vec<usize>> {
     sols
 }
 
-
-
 fn subsets(elems:&[usize]) -> Vec<Vec<usize>> {
     let n = elems.len();
     let mut sols = Vec::with_capacity(1<<n); 
