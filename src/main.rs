@@ -10,6 +10,15 @@
 // }
 
 
+fn one_bits(mut x:u8) -> u8 {
+    let mut bits = 0;
+    for s in 0..u8::BITS {
+        if x == 0 { return bits; }
+        bits += (x >> s) & 1;
+    }
+    bits
+}
+
 fn reverse_bits(mut x: u8) -> u8 {
     x = (( x >> 1 ) & 0b0101_0101) | ((x & 0b0101_0101) << 1);
     x = (( x >> 2 ) & 0b0011_0011) | ((x & 0b0011_0011) << 2);
@@ -47,6 +56,7 @@ fn reverse_bits(mut x: u8) -> u8 {
 
 
 fn main() {
+    println!("one bits {:?}", one_bits(5));
     println!("test {:x}", 0b1111_0000);
     // println!("test {:b}", 0x33);
     let mut x:u8 = 0b1010_0000;
