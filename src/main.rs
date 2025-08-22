@@ -1,46 +1,86 @@
-use std::collections::BinaryHeap;
-use std::cmp::Reverse;
-
-// minimize Sum(left) - Sum(right)
-// .. = max Sum(right), min Sum(left)
-
-fn min_difference(nums:&[i32]) -> i32 {
-    let size = nums.len() / 3;
-    let mut lefts:BinaryHeap<i32> = BinaryHeap::new();
-    let mut rights:BinaryHeap<Reverse<i32>> = BinaryHeap::new();
-    let mut lsum = 0;
-    let mut rsum = 0;
-    let mut min = i32::MAX;
-    for &num in &nums[0..size] {
-        lefts.push(num);
-        lsum += num;
-    }
-    for &num in &nums[2*size..] {
-        rights.push(Reverse(num));
-        rsum += num;
-    }
-    let mut leftmin = vec![0;size];
-    let mut rightmax = vec![0;size];
-
-    for (i, &num) in nums[size..2*size].iter().enumerate() {
-        if num < *lefts.peek().unwrap() {
-            lsum += num - lefts.pop().unwrap();
-            lefts.push(num);
+fn game_of_life(grid:&mut Vec<Vec<u8>>) -> &Vec<Vec<u8>> {
+    if grid.is_empty() || grid[0].is_empty() { return grid; }
+    let m = grid.len();
+    let n = grid[0].len();
+    for x in 0..m {
+        let mut neighbors = 0;
+        // initialize add in the (0,0) for consistency
+        for (dx, dy) in [ (!0,0), (1,0), (0,0)] {
+            let nx = x.wrapping_add(dx);
+            let ny = 0usize.wrapping_add(dy);
+            if nx < m && ny < n {
+                neighbors += if grid[nx][ny] & 1 == 1 { 1 } else { 0 };
+            }
         }
-        leftmin[i]  = lsum;
-    }
-    for (i, &num) in nums[size..2*size].iter().enumerate().rev() {     
-        if num > rights.peek().unwrap().0 {
-            rsum += num - rights.pop().unwrap().0;
-            rights.push(Reverse(num));
+        for y in 0..n {
+            // remove the neighbors specific to the previous
+            for (dx, dy) in [(1, !1), (!0, !1), (0, !1), (0, 0)] {
+                let nx = x.wrapping_add(dx);
+                let ny = y.wrapping_add(dy);
+                if nx < m && ny < n {
+                    neighbors -= if grid[nx][ny] & 1 == 1 { 1 } else { 0 };
+                }
+            }
+            // add the neighbors from the previous
+            for (dx, dy) in [ (0,!0), (!0,1), (0,1), (1,1), ] {
+                let nx = x.wrapping_add(dx);
+                let ny = y.wrapping_add(dy);
+                if nx < m && ny < n {
+                    neighbors += if grid[nx][ny] & 1 == 1 { 1 } else { 0 };
+                }
+            }
+            println!("neighbors {neighbors:?}");
+            // bit number 2 is next
+            grid[x][y] += match neighbors {
+                2 => grid[x][y] << 1,
+                3 => 0b10 , 
+                _ => 0b00,
+            };
         }
-        rightmax[i] = rsum;
     }
-    for i in 0..size {
-        min = min.min(leftmin[i] - rightmax[i]);
+    // update the result
+    for x in 0..m {
+        for y in 0..n { grid[x][y] >>= 1; }
     }
-    min 
+    grid
 }
 
+
+// fn game_of_life(grid:&mut Vec<Vec<u8>>) -> &Vec<Vec<u8>> {
+//     if grid.is_empty() || grid[0].is_empty() { return grid; }
+//     let m = grid.len();
+//     let n = grid[0].len();
+//     for x in 0..m {
+//         for y in 0..n {
+//             let mut neighbors:u8 = 0;
+//             for (dx, dy) in [
+//                 (1,0),  (0,1), (1,1), (!0,1),
+//                 (1,!0), (!0,0), (0,!0), (!0,!0), 
+//             ] {
+//                 let nx = x.wrapping_add(dx);
+//                 let ny = y.wrapping_add(dy);
+//                 if nx < m && ny < n {
+//                     neighbors += if grid[nx][ny] & 1 == 1 { 1 } else { 0 };
+//                 }
+//             }
+//             grid[x][y] += match neighbors {
+//                 2 => grid[x][y] << 1,
+//                 3 => 0b10 , 
+//                 _ => 0b00,
+//             };
+//         }
+//     }
+//     for x in 0..m {
+//         for y in 0..n { grid[x][y] >>= 1; }
+//     }
+//     grid
+// }
+
 fn main() {
+    println!("game of like {:?}",  game_of_life(&mut vec![vec![0,1,0],vec![0,0,1],vec![1,1,1],vec![0,0,0]]));
+    // println!("game of like {:?}",  game_of_life(&mut vec![vec![0,0,1],vec![1,1,1],vec![0,0,0]]));
+    // println!("game of like {:?}",  game_of_life(&mut vec![vec![1,1,1],vec![0,0,0]]));
+    // println!("game of like {:?}",  game_of_life(&mut vec![vec![0,1], vec![1,1]]));
+    // println!("game of like {:?}",  game_of_life(&mut vec![vec![1,1], vec![1,0]]));
+    // println!("testing {:?}", !1 + 2);
 }
