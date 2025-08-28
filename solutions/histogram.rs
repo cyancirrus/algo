@@ -6,7 +6,7 @@ fn histogram(nums:&[usize]) -> usize {
         while let Some(&top ) = stack.last() {
             if h < nums[top] {
                 let h = nums[top];
-                let left = stack.last().map_or(0, |&idx| idx + 1);
+                let left = stack.last().map_or(0, |&idx| idx);
                 let w = i - left;
                 stack.pop();
                 max = max.max(h * w);
