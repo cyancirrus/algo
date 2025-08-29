@@ -45,6 +45,22 @@ fn search_matrix_ii(matrix:&[Vec<u32>], target:u32) -> bool {
     false
 }
 
+fn search_matrix_linear_ii(matrix:&[Vec<u32>], target:u32) -> bool {
+    if matrix.is_empty() || matrix[0].is_empty() { return false; }
+    let (m, n) = (matrix.len(), matrix[0].len());
+    let (mut r, mut c) = (0, n-1);
+
+    while r < m {
+        if matrix[r][c] == target { return true; }
+        else if matrix[r][c] < target { r += 1; }
+        else { 
+            if c == 0 {return false; }
+            c-=1;
+        }
+    }
+    false
+}
+
 fn main() {
     // println!(
     //     "result {:?}",
