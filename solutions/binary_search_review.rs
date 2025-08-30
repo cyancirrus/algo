@@ -36,9 +36,9 @@ fn search_matrix(matrix:&[Vec<u32>], target:u32) -> (isize, isize ) {
     let row = l;
     (l, r) = (0, n - 1);
     let mut column = 0;
-    while l < r {
+    while l <= r {
         let c = (l + r) / 2;
-        if target < matrix[row][c] { r = c; }
+        if target < matrix[row][c] { r = c - 1; }
         else if matrix[row][c] < target { l = c + 1; }
         else { column = c; break; }
     }
