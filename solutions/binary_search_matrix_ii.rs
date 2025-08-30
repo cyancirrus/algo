@@ -17,12 +17,11 @@ fn binary_search_lower_row(
 
 fn binary_search_upper_col(
     matrix:&[Vec<u32>],
-    rows:usize,
     col:usize,
     bound:usize,
     target:u32
 ) -> usize {
-    let (mut d, mut u) = (bound, rows);
+    let (mut d, mut u) = (bound, matrix.len());
     while d < u {
         let m = (d + u) /2;
         if matrix[m][col] < target { d = m + 1; }
@@ -32,13 +31,14 @@ fn binary_search_upper_col(
 }
 
 fn search_matrix_ii(matrix:&[Vec<u32>], target:u32) -> bool {
+    // use if numbers are sparse
     if matrix.is_empty() || matrix[0].is_empty() { return false; }
     let (m, n) = (matrix.len(), matrix[0].len());
     let (mut row, mut col) = (0, n-1);
     while row < m {
         col = binary_search_lower_row(matrix, row, col, target);
          if matrix[row][col] == target { return true; }
-        row = binary_search_upper_col(matrix, m, col, row, target);
+        row = binary_search_upper_col(matrix, col, row, target);
         if row == m { return false; }
         if matrix[row][col] == target { return true; }
     }
@@ -46,6 +46,7 @@ fn search_matrix_ii(matrix:&[Vec<u32>], target:u32) -> bool {
 }
 
 fn search_matrix_linear_ii(matrix:&[Vec<u32>], target:u32) -> bool {
+    // use if numbers are dense
     if matrix.is_empty() || matrix[0].is_empty() { return false; }
     let (m, n) = (matrix.len(), matrix[0].len());
     let (mut r, mut c) = (0, n-1);
