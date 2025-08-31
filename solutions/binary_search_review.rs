@@ -8,7 +8,7 @@ fn binary_search_upper(nums:&[u32], target:u32) -> usize {
         if target > nums[m] { l = m + 1; }
         else { r = m; }
     }
-    l
+    r
 }
 // note how m <= target
 fn binary_search_lower(nums:&[u32], target:u32) -> usize {

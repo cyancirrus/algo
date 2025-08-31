@@ -27,7 +27,7 @@ fn binary_search_upper_col(
         if matrix[m][col] < target { d = m + 1; }
         else { u = m; }
     }
-    return d
+    return u
 }
 
 fn search_matrix_ii(matrix:&[Vec<u32>], target:u32) -> bool {
@@ -63,13 +63,13 @@ fn search_matrix_linear_ii(matrix:&[Vec<u32>], target:u32) -> bool {
 }
 
 fn main() {
-    // println!(
-    //     "result {:?}",
-    //     search_matrix_ii(
-    //         &[vec![1,4,7,11,15],vec![2,5,8,12,19],vec![3,6,9,16,22],vec![10,13,14,17,24],vec![18,21,23,26,30]],
-    //         11
-    //     )
-    // );
+    println!(
+        "result {:?}",
+        search_matrix_ii(
+            &[vec![1,4,7,11,15],vec![2,5,8,12,19],vec![3,6,9,16,22],vec![10,13,14,17,24],vec![18,21,23,26,30]],
+            11
+        )
+    );
     println!(
         "result {:?}",
         search_matrix_ii(
