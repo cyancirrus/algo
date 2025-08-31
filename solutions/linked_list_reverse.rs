@@ -7,13 +7,14 @@ struct Node {
 
 type Link = Option<Box<Node>>;
 
-fn reverse(mut head:Link) {
+fn reverse(mut head:Link) -> Link {
     let mut prev = None;
     while let Some(mut node) = head {
         head = node.next.take();
         node.next = prev;
         prev = Some(node);
     }
+    prev
 }
 
 
