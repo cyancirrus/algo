@@ -2,6 +2,37 @@ use std::collections::HashMap;
 
 
 
+// fn generate_parens(n:usize) -> Vec<String> {
+//     let mut res = vec![];
+    
+//     fn dfs(
+//         opens:usize,
+//         remain:usize,
+//         cur:&mut Vec<u8>,
+//         res:&mut Vec<Vec<u8>>,
+//     ) {
+//         if remain == 0 {
+//             res.push(cur.clone());
+//             return
+//         }
+//         if remain - opens > 1 {
+//             cur.push(b'(');
+//             dfs(opens + 1, remain - 1, cur, res);
+//             cur.pop();
+//         }
+//         if opens > 0 {
+//             println!("remain {remain:?}");
+//             cur.push(b')');
+//             dfs(opens - 1, remain - 1, cur, res);
+//             cur.pop();
+//         }
+//     }
+//     dfs(0, n << 1, &mut vec![], &mut res);
+
+//     res.into_iter()
+//         .map(|bs| String::from_utf8(bs).unwrap())
+//         .collect()
+// }
 fn generate_parens(n:usize) -> Vec<String> {
     let mut res = vec![];
     
