@@ -1,3 +1,18 @@
+use std::collections::HashMap;
+
+
+fn minimum_round(nums:&[u32]) -> isize {
+    let n = nums.len();
+    let mut freq:HashMap<u32, isize> = HashMap::with_capacity(n);
+    for &n in nums { *freq.entry(n).or_default()+=1; }
+    let mut rounds = 0;
+    for &k in freq.keys() {
+        if k == 1 { return -1; }
+        rounds += (k as isize + 2) / 3;
+    }
+    rounds 
+}
+
 
 
 // 1 -> 3 + 2 -> 3
